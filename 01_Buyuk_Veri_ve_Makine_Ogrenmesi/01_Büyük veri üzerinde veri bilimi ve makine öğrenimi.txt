@@ -1,0 +1,25 @@
+Büyük veri genel teorisi sunumu
+
+1. Büyük veri ve ortaya çıkış sebepleri
+
+2. Büyük veri kaynakları
+
+3. Büyük veri ile başa çıkmanın zorlukları
+
+4. Büyük veri kullanım alanları
+
+5. Büyük verinin karakteristikleri
+
+6. Veri artış tahmini ve kritik veri trendi
+
+7. Büyük veri işlemede kullanılan donanımları anlama
+
+8. Bir çok bilgisayarı birlikte kullanmanın zorlukları
+
+9. Büyük veriyi doğuran sebepler ve onu işlemeyi kolaylaştıran gelişmeler
+
+10.Büyük veri tanımı
+
+11. Büyük veri ve büyük veri yeteneklerine sahip olmanın önemi
+
+Spark derslerinde tartışılacağı için makine öğrenmesinden bahsedilmesi

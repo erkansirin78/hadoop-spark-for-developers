@@ -1,0 +1,5 @@
+pmml eskiapi için var dataframe api'de henüzyok.
+
+Geliþtirme ortamý ile canlý ortam ayný ise model diske saklanýp canlý ortamdaki veri akýþý ml modeli oluþturulurken
+kullanýlan akýþýn aynýsý yapýlýr ve saklanan modelin üzerinden geçirilir (transform).
+

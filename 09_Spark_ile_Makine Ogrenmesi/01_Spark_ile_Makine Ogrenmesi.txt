@@ -1,0 +1,42 @@
+00. Makine Öğrenmesi projelerinde de CRISP-DM benzeri bri sürecin takip edilmesi faydalıdır.
+
+01. İş probleminin anlaşılması 
+
+
+02. Verinin anlaşılması 
+
+
+03. Veri Hazırlığı:
+	Kategorik niteliklerin hazırlığı:
+		StringIndexer ile kategorik nitelikler rakamlara kodlanır.
+		
+		Daha sonra OneHotEncoder ile StringIndexer ile kodlanan rakamlar tekrar kodlanır. Gölge değişkenler oluşur.
+		Ancak spark bunu özül bir yöntemle tek sütun içinde kodlar Örneğin: (4, [2], [1.0])
+		4 kategori var bu 2. indekste olan için ve değeri 1 yani hot. Gölge değişken tuzağı için bir kategori içi boş bırakılır.
+		Kullanıcının ayrıca gölge değişken tuzağından kaçmasına gerek yoktur.
+		
+	Nümerik nitelikler ile OneHotEncoded kategorik nitelikler VectorAssembler ile bir araya getirilir.
+	
+	Aynı şekilde hedef değişken (sınıflandırma için) StringIndexer ile rakamlara kodlanır.
+	
+	Nümerik nitelikler farklı ölçeklerde ise StandardScaler ile standardizasyon yapılır. 
+	Alternatif olarak MinMaxScaler da kullanılabilir.
+	
+04. Model oluşturma
+	
+	Modelleme için aşağıdaki modüller içinde bulunan sınıflar kullanılabilir.
+	pyspark.ml.classification module
+	pyspark.ml.clustering module
+	pyspark.ml.recommendation module
+	pyspark.ml.regression module
+
+05. Model değerlendirme
+	pyspark.ml.evaluation module içinden uygun bir değerlendirici ile model değerlendirilir.
+	
+	Model değerlendirme kütüphaneleri kullanılır.
+	pyspark.ml.evaluation.BinaryClassificationEvaluator(self, rawPredictionCol="rawPrediction", labelCol="label", metricName="areaUnderROC")
+	pyspark.ml.evaluation.RegressionEvaluator(self, predictionCol="prediction", labelCol="label", metricName="rmse")
+	pyspark.ml.evaluation.MulticlassClassificationEvaluator(self, predictionCol="prediction", labelCol="label", metricName="f1")
+	
+	
+06. Modeli kullanıma alma

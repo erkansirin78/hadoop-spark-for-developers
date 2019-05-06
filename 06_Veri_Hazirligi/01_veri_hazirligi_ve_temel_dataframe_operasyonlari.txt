@@ -1,0 +1,57 @@
+1. spark ile csv dosyssı okuma ve dataframe yaratma
+
+2. veri okuma esnasonda kullanılan options'lar
+
+3. Dataframe şemasını inceleme df.printSchema()
+
+4. Veri türü dönüşümü yapma {  df2 = df.withColumn("aylik_gelir", df.aylik_gelir.cast("double"))   }
+
+5. Dtaframe'i görme { df.show(), z.show(df.limit(5)  }
+
+6. Dataframe sql fonksiyonlarını kullanma import pyspark.sql.functions as f
+
+7. Spark SQL kullanmak için geçici tablo oluşturma df3.createOrReplaceTempView("keyfekeder") 
+	yukarıdaki keyfekeder sql içinde kullanılacak tablo adıdır ve df3'e bir referans isimdir.
+	
+8. Örnek SparkSQL Sorgusu:
+	spark.sql(""" 
+
+			select * from keyfekeder limit 5
+
+
+	""").show()
+	
+9. Retail veri tabanını kullanarak tutar yönünden en çok iptal gerçekleşen 10 kategoriyi bulma:
++--------------------+------------------+
+|        categoryName|            toplam|
++--------------------+------------------+
+|             Fishing|134393.27999999965|
+|              Cleats| 85785.70000000016|
+|    Cardio Equipment| 81351.93000000001|
+|    Camping & Hiking|  80094.6600000001|
+|        Water Sports|  66196.6899999998|
+|     Women's Apparel|           65750.0|
+|      Men's Footwear| 60705.32999999974|
+|Indoor/Outdoor Games| 58126.74000000006|
+|       Shop By Sport| 27423.43999999998|
+|         Electronics| 5685.500000000001|
++--------------------+------------------+
+
+10. Bir text dosyasında bir kelimenin kaç defa tekrarlandığını bulma
+
+
+11. Çok fazla kategorisi bulunan kategorik değişkenleri daha az kategoriler altında birleştirme.
+Retail veri tabanındaki 58 ülkeyi kıtalar altında toplama ve kıta adında yeni bir kategorik değişken oluşturma
+
+
+
+
+
+
+
+
+
+
+
+
+

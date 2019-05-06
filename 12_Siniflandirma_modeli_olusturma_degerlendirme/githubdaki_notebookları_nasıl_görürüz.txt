@@ -1,0 +1,9 @@
+github dan zeppelin notebook adresini kopyalayýn
+
+https://www.zepl.com/explore
+adresine yapýþtýrýn. 
+Sonuçlar dahil kodlarý görebilirsiniz.
+
+Ayný iþlemi jupyter notebokklar için 
+https://nbviewer.jupyter.org/
+adresinden yapabilirsiniz.

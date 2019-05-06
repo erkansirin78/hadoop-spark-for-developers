@@ -1,0 +1,82 @@
+//////////////////  HDP SANDBOX JUPYTER KURULUMU  /////////////////////////////////////
+Sandbox Jupyter Kurulumu
+
+PYTHON 3.6 (KURULU DEÐÝLSE)
+		1. 
+		[root@sandbox-hdp /]# yum -y install yum-utils
+
+		2. 
+		yum -y groupinstall development
+
+		3.
+		yum -y install python36u-pip
+
+		4.
+		[root@sandbox-hdp /]# pip3.6 -V
+		pip 9.0.1 from /usr/lib/python3.6/site-packages (python 3.6)
+
+PYTHON PAKETLERÝ
+
+5.
+[root@sandbox-hdp /]# pip3.6 install pandas
+	epey bir dependency kuracaktýr
+
+6. 
+[root@sandbox-hdp /]# pip3.6 install --upgrade pip
+
+7.
+[root@sandbox-hdp /]# pip3.6 install matplotlib
+
+8.
+[root@sandbox-hdp /]# pip3.6 install sklearn
+
+9.
+[root@sandbox-hdp /]# pip3.6 install seaborn
+
+10. 
+[root@sandbox-hdp /]# pip3.6 install jinja2
+
+11.
+[root@sandbox-hdp /]# pip3.6 install pyzmq
+
+12.
+[root@sandbox-hdp /]# pip3.6 install jupyter
+
+13.
+[root@sandbox-hdp /]# pip3.6 install findspark
+
+14.
+	su hdfs 
+	cd /home/hdfs
+	mkdir notebook
+
+15.
+/home/hdfs dizininden 
+[hdfs@sandbox-hdp /]$  jupyter notebook --ip sandbox-hdp.hortonworks.com --port 8889
+ile çalýþtýr.
+
+16. 
+http://sandbox-hdp.hortonworks.com:8889/?token=85adadd51bf1971c1f050fbde933b268a3d307aec9135c75
+
+adresinden jupyter'a eriþ.
+
+Aþaðýdaki kodlarý Jupyter'da çalýþtýr.
+
+import findspark
+findspark.init("/usr/hdp/current/spark2-client/")
+
+from pyspark.sql import functions as F
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder \
+.appName("Jupyter_Spark_Giris") \
+.master("yarn") \
+.getOrCreate()
+
+df = spark.read.format("csv") \
+.option("header","True") \
+.option("inferSchema","True") \
+.load("hdfs:///user/admin/simple_data.csv")
+# Yukarýdaki dosya önceden HDFS'e yüklenmiþ olmalýdýr.
+
+df.toPandas().head()

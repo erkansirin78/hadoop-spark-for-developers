@@ -1,0 +1,22 @@
+﻿1. Ambari Hive2 View üzerinden Uplad Table ile adult veri seti Hive'a tablo olarak yüklenir ve örnek sorgular çalıştırılır.
+
+
+2. Sorgular esnasında YARN Resource Manager arayüzündeki değişiklikler gözlemlenir.
+
+3. Hive veri tabanı yaratma
+
+	3.1. CREATE DATABASE azhadoop;
+	
+	3.2. SHOW DATABASES;
+	
+	ile yeni yaratılan azhadoop veri tabanı listede görülür.
+	
+4. DBeaver Hive Bağlantısı ve Hive üzerinde sorgu çalıştırma
+
+
+5. Hive ve Impala 
+	Impala Hive'ın Cloudera'daki karşılığı
+	Impala'nın bir avantajı BI tarzındaki sorguları
+	Ayrıca Impala sorgu performansı olarak da daha hızlı
+	Ancak Impala Cloudera ile sınırlı bir araç Hive daha geniş ve açık bir proje
+	
