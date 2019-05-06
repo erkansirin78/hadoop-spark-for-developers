@@ -1,9 +1,0 @@
-Oozie workflow manager'de işi iş takibi yapmak ve koordine etmektir.
-
-Benzer araçlar: LinkedIn Azkaban, Luigi Spotify, Apache Airflow.
-
-1. oozie Servisini Ambari üzerinden çalıştır.
-
-2. Ambari -> sağ üstteki kutucuklar -> Workflow Manager
-
-3. 

@@ -22,7 +22,7 @@
 	.git klasörünü ve içeriğini görebiliriz (genel git bilgisi)
 	
 6. Kursun github reposunu ekleme
-	Komut: git remote add spark https://github.com/erkansirin78/hadoop-spark-for-datascientists.git
+	Komut: git remote add spark https://github.com/erkansirin78/hadoop-spark-for-developers.git
 
 7. Github'daki en güncel içeriği çalışma diznine çekme
 	Komut: git pull spark master
@@ -49,6 +49,14 @@
 	ping atmalıdır.
 	
 	Ctrl+c ile işlemi durdur.
+	
+	
+	Windows users:
+
+	Run Notepad as administrator.
+	Open hosts file located in: c:\Windows\System32\drivers\etc\hosts
+	Add {IP-Address} localhost sandbox-hdp.hortonworks.com sandbox-hdf.hortonworks.com
+	Save the file
 	
 	8.2. Terminalden Sandbox'a erişim
 	------------------------------------
