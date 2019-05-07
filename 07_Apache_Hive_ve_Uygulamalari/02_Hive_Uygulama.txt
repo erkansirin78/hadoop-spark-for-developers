@@ -33,5 +33,35 @@ Sorgu dan önce
 8. Sorgu:
 0: jdbc:hive2://localhost:10000>  select workclass, COUNT(*) FROM `default`.adult_preprocessed GROUP by workclass;
 
+[Error: Failure while running task:java.lang.IllegalArgumentException: tez.runtime.io.sort.mb 396 should be larger than 0 and should be less than the available task memory (MB):178
+
+hatası alınır.
+Çözüm:
+
+Ambari -> Tez -> Config 
+Filter'a 
+tez.runtime.io.sort.mb
+karşısındaki değeri 170 yaptık 
+Save ettik 
+
+Ambari ana sayfadan restart all required diyoruz.
+
+
 
 9. YARN Resource Manager'dan hive kuyruğundan kaynak alındığı gözlenir.
+
+
+10. Dbeaver üzerinden 
+set tez.queue.name=hive;
+
+select workclass, COUNT(*) FROM `default`.adult_preprocessed GROUP by workclass;
+
+çalışan sorgunun YARN hive kuyruğundan kaynak aldığı gözlemlenir.
+
+
+
+
+
+
+
+

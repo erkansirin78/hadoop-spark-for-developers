@@ -5,7 +5,7 @@
 2. https://prestodb.github.io/ 
 adresine gidilir.
 
-3. Overview -> Deployin Presto 
+3. Overview -> Deploying Presto 
 
 4. presto-server-0.219.tar.gz linkinin bağlantısını kopyala
 
@@ -28,7 +28,7 @@ CONFIGURING PRESTO
 
 12. mkdir -p /var/presto/data
 
-13.Command Line Interface 
+13.Presto sitesinden Command Line Interface 
 Bölümünde presto-cli-0.219-executable.jar bağlantısını kopyala 
 
 cd /opt/presto/bin
@@ -51,9 +51,14 @@ Kontrol
 
 presto:default> select workclass, COUNT(*) FROM hive.default.adult_preprocessed GROUP by workclass;
 
+18. Dbeaver presto connection
 
+New Database Connection -> 
 
+Bakılıp yapılacak.
 
+19. Presto'dan çıkmak
+exit
 
 
 
