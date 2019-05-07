@@ -1,3 +1,5 @@
+Windows bilgisayarlarda kaç tane disk ortamı var daha iyi anlamak ve kopyalama yapmak açısından WinSCP kurulur.
+
 //// Sanal Makine Lokalinden HDFS'e veri taşıma ///////////////////
 1. ssh root@sandbox-hdp.hortonworks.com -p 2222 ile Sandbox' terminal den bağlanın
 
@@ -14,7 +16,7 @@
 	wget ile:
 	Github repo üzerinde istediğiniz veri setini gördükten sonra Raw'a tıklayın ve bağlantıyı kopyalayın:
 	Örnek aşağıda:
-		https://raw.githubusercontent.com/erkansirin78/hadoop-spark-for-datascientists/master/Datasets/simple_data.csv
+		https://raw.githubusercontent.com/erkansirin78/hadoop-spark-for-developers/master/Datasets/simple_data.csv
 		
 	Veriyi indirin:	
 	[maria_dev@sandbox-hdp ~]$ wget https://raw.githubusercontent.com/erkansirin78/hadoop-spark-for-datascientists/master/Datasets/simple_data.csv

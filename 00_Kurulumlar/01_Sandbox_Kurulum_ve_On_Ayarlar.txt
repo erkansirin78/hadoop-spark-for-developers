@@ -65,7 +65,7 @@
 	Burada kullanıcı ve şifreler var.
 	
 	Mac için:
-	Terminalden root kullanıcısı ile Sandbox'a bağlanma:
+	Terminalden root kullanıcısı ile Sandbox'a bağlanma(Mac):
 	 ssh -v root@sandbox-hdp.hortonworks.com -p 2222
 	 
 	Windows için gitbash veya putty üzerinden:
@@ -80,7 +80,7 @@
 	ambari-admin-password-reset
 	
 	yeni şifre girmemizi isteyecektir.
-	
+	Ankara06
 	
 	Yeni şifre girdikten sonra Ambari yeniden başlar
 	

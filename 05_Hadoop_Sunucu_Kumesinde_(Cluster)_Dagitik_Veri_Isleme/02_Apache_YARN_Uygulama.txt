@@ -1,3 +1,8 @@
 1. YARN Resource Manager arayüzünden YARN uygulamasının yolculuğu gözlemlernir.
-
+	ResourceManager arayüzüne Ambari -> YARN -> QuickLinks -> ResourceManager UI ile ulaşabiliriz
+	
+	
 2. Ambari YARN Queue Manager üzerinden YARN kuyruk mekanizması ve çalışma mantığı incelenir.
+
+
+3. Hive kuyruğu yaratılır. hive kullanıcısı ile başlatılan sorguların bu kuyruktan kaynak alması sağlanır.
