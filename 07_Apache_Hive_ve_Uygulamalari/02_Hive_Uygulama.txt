@@ -20,3 +20,18 @@
 	Ayrıca Impala sorgu performansı olarak da daha hızlı
 	Ancak Impala Cloudera ile sınırlı bir araç Hive daha geniş ve açık bir proje
 	
+6. Beeline ile Hive komut satırına bağlanma:
+[root@sandbox-hdp ~]# beeline -u jdbc:hive2://localhost:10000
+
+
+
+7. Kuyruk adı belirterek hive sorgusu çalıştırmak
+Sorgu dan önce 
+ jdbc:hive2://localhost:10000> set tez.queue.name=hive;
+
+
+8. Sorgu:
+0: jdbc:hive2://localhost:10000>  select workclass, COUNT(*) FROM `default`.adult_preprocessed GROUP by workclass;
+
+
+9. YARN Resource Manager'dan hive kuyruğundan kaynak alındığı gözlenir.
