@@ -1,0 +1,1 @@
+Zeppelin üzerinden işlenir veya Windows üzerine Spark ve Intellij kurularak gösterilir.

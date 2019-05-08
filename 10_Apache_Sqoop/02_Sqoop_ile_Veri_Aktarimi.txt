@@ -42,8 +42,10 @@ mysql> GRANT ALL PRIVILEGES ON azhadoop.* TO 'root'@'sandbox-hdp.hortonworks.com
 	
 	mysql> create table iris_mysql(SepalLengthCm double, SepalWidthCm double, PetalLengthCm double, PetalWidthCm double, Species VARCHAR(20));
 
+		mysql çıkış.
+		\q:
 	2.1. iris.csv dosyasını /root dizinine taşıma ve başlık satırını silme
-		[root@sandbox-hdp ~]# wget https://raw.githubusercontent.com/erkansirin78/hadoop-spark-for-datascientists/master/Datasets/iris.csv
+		[root@sandbox-hdp ~]# wget https://raw.githubusercontent.com/erkansirin78/hadoop-spark-for-developers/master/Datasets/iris.csv
 		
 	2.2. 
 	[root@sandbox-hdp ~]# vi iris.csv
@@ -59,9 +61,6 @@ mysql> GRANT ALL PRIVILEGES ON azhadoop.* TO 'root'@'sandbox-hdp.hortonworks.com
 		LINES TERMINATED BY '\n'
 		(SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm,Species);
 
-
-
-
 mysql çıkış.
  \q:
 
@@ -73,13 +72,14 @@ mysql çıkış.
 
 Bu komutun sonunda ekrana sorgu sonucu gelmelidir.
 
-5. Ambari'den Atlas servisini siliyorum. Çünkü denemelerimde sürekli sqoop'un çalışmasını engellediğini gördüm.
+5. Ambari'den Atlas servisini silelim lib ler çakışıyor. 
+Çünkü denemelerde alınan hatalardan Atlas hook sürekli Sqoop'un çalışmasını engellediği görüldü.
 
 6. sqoop import ile mysql'den hdfs'e veri aktarma 
-import edilecek dizini hdfs'te yaratalım:
-[maria_dev@sandbox-hdp ~]$ hdfs dfs /user/maria_dev/sqoop_import
+	6.1. import edilecek dizini hdfs'te yaratalım:
+		[maria_dev@sandbox-hdp ~]$ hdfs dfs -mkdir /user/maria_dev/sqoop_import
 
-Sqoop import'u çalştıralım:
+		Sqoop import'u çalştıralım:
 
 [maria_dev@sandbox-hdp ~]$ sqoop import --connect jdbc:mysql://sandbox-hdp.hortonworks.com/azhadoop \
 --driver com.mysql.jdbc.Driver --username root --password hadoop \
@@ -97,20 +97,11 @@ bunu daha fazla parça ile yapabilirdik. Ancak olmadığı için mecbur --m 1 ya
 
 7. sqoop import ile mysql'den Hive'a veri aktarma 
 
-deneme-1
-sqoop import --connect jdbc:mysql://sandbox-hdp.hortonworks.com/azhadoop --username root --password hadoop --table iris_mysql --target-dir /tmp/hive_temp --fields-terminated-by "," --hive-import --create-hive-table --hive-table azhadoop.iris_hive
-
-19/04/27 13:35:59 ERROR manager.SqlManager: Error reading from database: java.sql.SQLException: Streaming result set com.mysql.jdbc.RowDataDynamic@4b8ee4de is still active. No statements may be issued when any streaming result sets are open and in use on a given connection. Ensure that you have called .close() on any active streaming result sets before attempting more queries.
-java.sql.SQLException: Streaming result set com.mysql.jdbc.RowDataDynamic@4b8ee4de is still active. No statements may be issued when any streaming result sets are open and in use on a given connection. Ensure that you have called .close() on any active streaming result sets before attempting more queries.
-
-
-deneme-2
 
 sqoop import --connect jdbc:mysql://sandbox-hdp.hortonworks.com/azhadoop \
+--driver com.mysql.jdbc.Driver \
 --username root --password hadoop \
 --query "select * from iris_mysql WHERE \$CONDITIONS" \
 --m 1 --hive-import --hive-table azhadoop.iris_hive --target-dir /tmp/hive_temp
 
 
-
-sqoop import --connect jdbc:mysql://sandbox-hdp.hortonworks.com/azhadoop --username root --password hadoop --query "select * from iris_mysql WHERE \$CONDITIONS" --m 1 --hive-import --hive-table azhadoop.iris_hive --target-dir /tmp/hive_temp
