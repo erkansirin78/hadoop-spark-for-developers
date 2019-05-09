@@ -12,8 +12,15 @@
 	/usr/hdf/current/nifi/bin/nifi.sh start
 	
 5. vi /usr/hdf/current/nifi/conf/nifi.properties ile dosya içine gir.
+	
+	#web properties# bölümünde
 	nifi.web.http.port= değerini 8080'den 8090'a çek.
 
+	Açılması biraz zaman alır. 
+	
+	Çalışırlık kontrolü:
+	 /usr/hdf/current/nifi/bin/nifi.sh status
+	 
 6. Browser’a http://sandbox.hortonworks.com:8090/nifi/ adresini gir ve NiFi arayüzünü gör. 
 
 
