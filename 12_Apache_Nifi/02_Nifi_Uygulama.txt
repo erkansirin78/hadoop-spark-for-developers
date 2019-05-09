@@ -8,10 +8,13 @@
 
 3. yum -y install  nifi_3_1_2_0_7 komutu ile kurulumu başlat.
 
-4. vi /usr/hdf/current/nifi/conf/nifi.properties ile dosya içine gir.
+4. kurulum sonrası nifi çalıştırma
+	/usr/hdf/current/nifi/bin/nifi.sh start
+	
+5. vi /usr/hdf/current/nifi/conf/nifi.properties ile dosya içine gir.
 	nifi.web.http.port= değerini 8080'den 8090'a çek.
 
-5. Browser’a http://sandbox.hortonworks.com:8090/nifi/ adresini gir ve NiFi arayüzünü gör. 
+6. Browser’a http://sandbox.hortonworks.com:8090/nifi/ adresini gir ve NiFi arayüzünü gör. 
 
 
 ///////////////////// NiFi Mysql’den Kafka’ya incremental veri akışı ////////////////////////
