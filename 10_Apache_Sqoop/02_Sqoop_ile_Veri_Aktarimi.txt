@@ -82,7 +82,8 @@ Bu komutun sonunda ekrana sorgu sonucu gelmelidir.
 		Sqoop import'u çalştıralım:
 
 [maria_dev@sandbox-hdp ~]$ sqoop import --connect jdbc:mysql://sandbox-hdp.hortonworks.com/azhadoop \
---driver com.mysql.jdbc.Driver --username root --password hadoop \
+--driver com.mysql.jdbc.Driver \
+--username root --password hadoop \
 --table iris_mysql --m 1 --target-dir /user/maria_dev/sqoop_import/iris
 
 Hedef dizinde kontrol yapalım:
@@ -96,6 +97,15 @@ bunu daha fazla parça ile yapabilirdik. Ancak olmadığı için mecbur --m 1 ya
 
 
 7. sqoop import ile mysql'den Hive'a veri aktarma 
+
+mapreduce.job.ubertask.enable = true
+mapreduce.job.ubertask.maxmaps = 1
+mapreduce.job.ubertask.maxreduces = 1
+mapreduce.job.ubertask.maxbytes = 134217728
+
+mapreduce.job.ubertask.maxbytes değeri HDFS ayarlarından alındı dfs.block.size=134217728
+
+
 
 
 sqoop import --connect jdbc:mysql://sandbox-hdp.hortonworks.com/azhadoop \
