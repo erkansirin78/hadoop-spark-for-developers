@@ -46,10 +46,16 @@
 5.	Browser’a http://sandbox.hortonworks.com:8090/nifi/ adresini gir ve NiFi arayüzünü gör. 
 
 6.	Nifi arayüzünden mysql veri tabanı bağlantısı için connection pool oluştur.
+	 Ana sayfa -> sol menü configüration (küçük çark) -> controller service tabı -> sağ tarafta + işareti -> DBCPConnectionPool
+	 
+
 		Database connection url: jdbc:mysql://127.0.0.1/azhadoop
 		Database Driver Class Name: com.mysql.jdbc.Driver
 		Database Driver Location(s): /usr/share/java/mysql-connector-java.jar
 		Database User: root
+		Password: hadoop
+		
+Sağ taraftan enable et
 
  Kafka Topic Yaratma:
 1. /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create --zookeeper sandbox.hortonworks.com:2181 --replication-factor 1 --partitions 1 --topic iris

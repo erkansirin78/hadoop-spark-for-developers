@@ -1,0 +1,37 @@
+a.	Dataframe ve Dataset Persistence
+Spark SQL, spark.catalog.cacheTable ("tableName") veya dataFrame.cache() işlevini kullanarak bellek içi bir sütun biçimi kullanarak 
+tabloları önbelleğe alabilir. Daha sonra Spark SQL yalnızca gerekli sütunları tarayacak ve bellek kullanımını ve GC basıncını en aza indirmek için otomatik olarak sıkıştırmayı ayarlayacaktır. 
+Tabloyu bellekten kaldırmak için spark.catalog.uncacheTable("tableName") öğesini çağırabilirsiniz.
+
+b.	Persistence Seviyeleri
+Storage Level			Meaning
+MEMORY_ONLY				Store RDD as deserialized Java objects in the JVM. If the RDD does not fit in memory, some partitions will not be cached and will be recomputed on the fly each time they're needed. This is the default level.
+MEMORY_AND_DISK			Store RDD as deserialized Java objects in the JVM. If the RDD does not fit in memory, store the partitions that don't fit on disk, and read them from there when they're needed.
+MEMORY_ONLY_SER 
+(Java and Scala)		Store RDD as serialized Java objects (one byte array per partition). This is generally more space-efficient than deserialized objects, especially when using a fast serializer, but more CPU-intensive to read.
+MEMORY_AND_DISK_SER 
+(Java and Scala)		Similar to MEMORY_ONLY_SER, but spill partitions that don't fit in memory to disk instead of recomputing them on the fly each time they're needed.
+DISK_ONLY				Store the RDD partitions only on disk.
+MEMORY_ONLY_2, 
+MEMORY_AND_DISK_2, etc.	Same as the levels above, but replicate each partition on two cluster nodes.
+OFF_HEAP (experimental)	Similar to MEMORY_ONLY_SER, but store the data in off-heap memory. This requires off-heap memory to be enabled.
+
+
+c.	RDD Persistence
+Spark'taki en önemli özelliklerden biri, operasyonlar arasında bellekteki bir veri kümesini devam ettiriyor (veya önbelleğe alıyor). 
+Bir RDD'yi persist ettiğinizde, her node bellekte hesapladığı bölümlerini saklar ve 
+bu veri kümesi (veya bundan türetilmiş veri kümeleri) üzerindeki diğer işlemlerde yeniden kullanır. 
+Bu, müteakip işlemlerin daha hızlı olmasını sağlar (genellikle 10x'ten fazla). 
+Önbellekleme (cache), yinelemeli (iterative) algoritmalar ve hızlı etkileşimli kullanım için önemli bir araçtır.
+
+Bir RDD'yi, üzerinde persist() veya cache() yöntemlerini kullanarak kalıcı olarak işaretleyebilirsiniz. 
+İlk defa bir action esnasında hesaplanır, node'lar üzerinde bellekte tutulur. 
+Spark’ın önbelleği hataya dayanıklıdır - RDD’nin herhangi bir bölümü kaybolursa, 
+orijinal olarak yarattığı dönüşümler kullanılarak otomatik olarak yeniden hesaplanır.
+
+Ek olarak, her bir kalıcı RDD, örneğin veri setini diskte kalmasına, bellekte kalmasına, ancak serileştirilmiş 
+Java nesneleri olarak (yer kazanmak için) düğümler arasında çoğaltmanıza izin veren farklı bir depolama düzeyi kullanarak depolanabilir.
+
+Bu seviyeler bir StorageLevel nesnesi (Scala, Java, Python) persist() öğesine geçirilerek ayarlanır. 
+cache() yöntemi, StorageLevel.MEMORY_ONLY (seri hale getirilmiş nesneleri bellekte saklar) olan varsayılan depolama seviyesini 
+kullanmak için bir yoldur. 

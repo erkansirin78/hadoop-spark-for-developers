@@ -1,0 +1,12 @@
+a.	Sunucu Kümeleri (Cluster) Üzerinde Apache Spark Çalıştırmak
+	Kurs boyunca bunu yaptık YRN kullanarak Hadoop cluster üzerinde çalıştık.
+	
+b.	RDD Partitions
+	RDD'nin parçalanmış veri setleri olduğundan bahsettitk. Partitions sayısı repartittions ile 
+	tekrar kullanıcı tarafından belirlenebilir.
+	
+c.	Application, Job, Stage ve Task Kavramları
+	Teori derslerinde bahsettik ve sürekli YARN Resource manager üzerinden uygulamalr üzerinden incelemelerde bulunduk.
+	
+d.	Spark Execution Planı
+	SparkSQL dersinde dataframe api si ile sql explain planı karşılaştırdık. Teorik derslerde çalışma planından bahsettik.

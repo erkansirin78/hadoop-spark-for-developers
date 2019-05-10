@@ -80,3 +80,8 @@ pom.xml dosyasına eklenecekler:
         </plugins>
 
     </build>
+	
+	
+jar oluşturma Intellij
+1. File -> Project Structure -> Libraries 
+	Add maven ve Maven: com.google.code.gson:gson:2.2.4 seç

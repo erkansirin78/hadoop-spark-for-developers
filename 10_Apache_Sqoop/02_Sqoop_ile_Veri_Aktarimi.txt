@@ -96,7 +96,7 @@ bunu daha fazla parça ile yapabilirdik. Ancak olmadığı için mecbur --m 1 ya
 
 
 
-7. sqoop import ile mysql'den Hive'a veri aktarma 
+7. sqoop import ile mysql'den Hive'a veri aktarma ön ayarlar:
 
 mapreduce.job.ubertask.enable = true
 mapreduce.job.ubertask.maxmaps = 1
@@ -106,12 +106,26 @@ mapreduce.job.ubertask.maxbytes = 134217728
 mapreduce.job.ubertask.maxbytes değeri HDFS ayarlarından alındı dfs.block.size=134217728
 
 
-
+8. Aktarım:
+Tablo mevcut değilse:
+target dir silme  hdfs dfs -rm -R -skipTrash /tmp/hive_temp
 
 sqoop import --connect jdbc:mysql://sandbox-hdp.hortonworks.com/azhadoop \
 --driver com.mysql.jdbc.Driver \
 --username root --password hadoop \
 --query "select * from iris_mysql WHERE \$CONDITIONS" \
---m 1 --hive-import --hive-table azhadoop.iris_hive --target-dir /tmp/hive_temp
+--m 1 --hive-import --create-hive-table \
+--hive-table azhadoop.iris_hive --target-dir /tmp/hive_temp
 
+
+Tablo mevcut ve üzerine yazılacaksa:
+target dir silme  hdfs dfs -rm -R -skipTrash /tmp/hive_temp
+sqoop import --connect jdbc:mysql://sandbox-hdp.hortonworks.com/azhadoop \
+--driver com.mysql.jdbc.Driver \
+--username root --password hadoop \
+--query "select * from iris_mysql WHERE \$CONDITIONS" \
+--m 1 --hive-import --hive-overwrite \
+--hive-table azhadoop.iris_hive --target-dir /tmp/hive_temp
+
+Failed with exception org.apache.hadoop.security.AccessControlException: User null does not belong to hadoop
 
