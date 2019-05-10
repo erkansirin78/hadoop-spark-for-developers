@@ -1,28 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-1. Bu ders Zeppelin veya Windows üzerine Spark 2.3.1 - Intellij kurularak işlenir.
+    <groupId>spark</groupId>
+    <artifactId>jar</artifactId>
+    <version>1.0-SNAPSHOT</version>
 
-2.
-Windows üzerine Spark kurulumu:
-https://www.veribilimi.co/windows-10-spark-2-kurulumu/
-takip edilerek kurulur.
-
-JDK için Oracle alternatifi openjdk kurulumu:
-https://github.com/ojdkbuild/ojdkbuild
-
-3. Spark kurulumundan sonra Intellij kurulur 
-
-4. İntellij açılışında Sağ alt configure'dan Scala plugin kurulur.
-	kurulum sonrası Intellij yeniden başlamak isteyecektir.
-
-5. Maven projesi yaratılır. 
-
-6. src -> main -> java klasörü Shift+F6 ile scala yapılır.
-	Aynı şekilde test -> java klasörü de scala yapılır.
-
-7.
-pom.xml dosyasına eklenecekler:
-
- <properties>
+    <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -80,3 +66,4 @@ pom.xml dosyasına eklenecekler:
         </plugins>
 
     </build>
+</project>
