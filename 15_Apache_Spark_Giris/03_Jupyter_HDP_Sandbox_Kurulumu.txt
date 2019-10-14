@@ -1,7 +1,7 @@
 //////////////////  HDP SANDBOX JUPYTER KURULUMU  /////////////////////////////////////
 Sandbox Jupyter Kurulumu
 
-PYTHON 3.6 (KURULU DEÐÝLSE)
+PYTHON 3.6 (KURULU DEÄžÄ°LSE)
 		1. 
 		[root@sandbox-hdp /]# yum -y install yum-utils
 
@@ -15,11 +15,11 @@ PYTHON 3.6 (KURULU DEÐÝLSE)
 		[root@sandbox-hdp /]# pip3.6 -V
 		pip 9.0.1 from /usr/lib/python3.6/site-packages (python 3.6)
 
-PYTHON PAKETLERÝ
+PYTHON PAKETLERÄ°
 
 5.
 [root@sandbox-hdp /]# pip3.6 install pandas
-	epey bir dependency kuracaktýr
+	epey bir dependency kuracaktÄ±r
 
 6. 
 [root@sandbox-hdp /]# pip3.6 install --upgrade pip
@@ -53,14 +53,14 @@ PYTHON PAKETLERÝ
 15.
 /home/hdfs dizininden 
 [hdfs@sandbox-hdp /]$  jupyter notebook --ip sandbox-hdp.hortonworks.com --port 8889
-ile çalýþtýr.
+ile Ã§alÄ±ÅŸtÄ±r.
 
 16. 
 http://sandbox-hdp.hortonworks.com:8889/?token=85adadd51bf1971c1f050fbde933b268a3d307aec9135c75
 
-adresinden jupyter'a eriþ.
+adresinden jupyter'a eriÅŸ.
 
-Aþaðýdaki kodlarý Jupyter'da çalýþtýr.
+AÅŸaÄŸÄ±daki kodlarÄ± Jupyter'da Ã§alÄ±ÅŸtÄ±r.
 
 import findspark
 findspark.init("/usr/hdp/current/spark2-client/")
@@ -77,6 +77,6 @@ df = spark.read.format("csv") \
 .option("header","True") \
 .option("inferSchema","True") \
 .load("hdfs:///user/admin/simple_data.csv")
-# Yukarýdaki dosya önceden HDFS'e yüklenmiþ olmalýdýr.
+# YukarÄ±daki dosya Ã¶nceden HDFS'e yÃ¼klenmiÅŸ olmalÄ±dÄ±r.
 
 df.toPandas().head()

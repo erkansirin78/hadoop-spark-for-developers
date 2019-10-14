@@ -36,3 +36,18 @@ Save -> Ok -> Proceed anyway
 Ambari sol alt -> Restart all required 
 
 başlaması gerekenler başlar.
+
+
+5. YARN uygulamalarını komut satırı ile sonlandırma
+	su yarn
+	yarn application -kill <application_id>
+	Örnek:
+	yarn application -kill application_1559027572301_0001
+	
+	
+	
+	
+	
+	
+	
+	

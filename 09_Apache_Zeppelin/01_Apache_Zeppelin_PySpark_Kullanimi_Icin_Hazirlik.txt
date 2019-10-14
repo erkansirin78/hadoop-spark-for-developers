@@ -11,10 +11,8 @@ Yararlanılan kaynak :https://www.digitalocean.com/community/tutorials/how-to-in
 		
 		root@sandbox-hdp /]# yum -y install python36u
 		
-		root@sandbox-hdp /]# python3.6 -V
-		Çıktı olarak Python 3.6.1 görmeliyiz
-		
 		root@sandbox-hdp /]# yum -y install python36u-pip
+		[root@sandbox-hdp /]# pip3.6 install --upgrade pip
 
 		PİP3.6 KURULUMU (Artık Python 3 için paketlerimizi pip3.6 instal paket_adı ile yükleyeceğiz)
 		[root@sandbox-hdp /]# pip3.6 -V
@@ -24,23 +22,9 @@ Yararlanılan kaynak :https://www.digitalocean.com/community/tutorials/how-to-in
 
 		PYTHON PAKETLERİ
 
-
-		[root@sandbox-hdp /]# pip3.6 install pandas
-			epey bir dependency kuracaktır
-
-
-		[root@sandbox-hdp /]# pip3.6 install --upgrade pip
-
-
-		[root@sandbox-hdp /]# pip3.6 install matplotlib
-
-
-		[root@sandbox-hdp /]# pip3.6 install sklearn
-
-
-		[root@sandbox-hdp /]# pip3.6 install seaborn
-
-		[root@sandbox-hdp /]# pip3.6 install findspark
+		
+		[root@sandbox-hdp /]# pip3.6 install pandas matplotlib sklearn seaborn  findspark
+		
 		
 ZEPPELIN SPARK2 INTERPRETER AYARLARI:
 			
