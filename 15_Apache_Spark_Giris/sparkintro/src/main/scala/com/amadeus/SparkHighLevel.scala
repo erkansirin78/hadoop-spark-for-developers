@@ -43,6 +43,23 @@ object SparkHighLevel {
       F.format_number(df3.col("avg_salary"), 2))
       .show()
 
+    // SQL QUERY
+
+    df2.createOrReplaceTempView("myTable")
+
+    spark.sql("SELECT * FROM myTable LIMIT 5").show()
+
+    // same as above sql query
+    df2.limit(5).show()
+
+    // write to disk
+    df2
+      .coalesce(1)
+      .write
+      .mode("overwrite")
+      .option("header","true")
+      .option("sep","|")
+      .csv("D:/simple_data_spark_write")
 
 
   }
