@@ -40,3 +40,12 @@ Password: hive
 6. Sol menü aðacýndan Hive Connection sað týklanýr ve sql editör açýlarak sorgu yazýlabilir.
 
 
+Olasý hatalar ve çözümü:
+1. DBeaver Hive sorgusu esnasýnda 
+tez.runtime.io.sort.mb 594 should be larger than 0 and less than the available task memory (MB 178)
+hatasý
+
+Çözüm:
+Ambari arayüze gidilir
+Tez -> Config  -> tez.runtime.io.sort.mb
+deðeri 170 yapýlýr.

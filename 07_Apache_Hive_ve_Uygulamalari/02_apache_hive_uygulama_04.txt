@@ -1,0 +1,708 @@
+========================================================================
+							HIVE SORTING 
+========================================================================
+0. HAZIRLIK
+
+	"hive.execution.engine=MapReduce"  kullanarak.
+
+	Kullanılacak veri: https://raw.githubusercontent.com/erkansirin78/datasets/master/SosyalMedyaReklamKampanyasi.csv
+
+	[maria_dev@sandbox-hdp ~]$ 
+
+wget https://raw.githubusercontent.com/erkansirin78/datasets/master/SosyalMedyaReklamKampanyasi.csv
+
+hive
+
+use azhadoop;
+
+create table if not exists social_media (KullaniciID int, Cinsiyet string, Yas int, TahminiMaas float, SatinAldiMi int) row format delimited fields terminated by ',' lines terminated by '\n' stored as textfile tblproperties('skip.header.line.count'='1');
+
+load data local inpath '/home/maria_dev/SosyalMedyaReklamKampanyasi.csv' overwrite into table social_media;
+
+
+select * from social_media limit 5;
+	
+	OK
+	15624510        Erkek   19      19000.0 0
+	15810944        Erkek   35      20000.0 0
+	15668575        Kadın   26      43000.0 0
+	15603246        Kadın   27      57000.0 0
+	15804002        Erkek   19      76000.0 0
+
+ORDER BY, SORT BY, DISTRIBUTED BY, CLUSTER BY
+
+1. ORDER BY 
+	Tek bir reducer kullanır. Bildiğimiz tam sıralamadır. Ancak bunu yapmak için tek reducer kullanmak zorunda olduğu için zorlanır. Bu yüzden LIMIT ile sınırlandırılmalıdır(strict mode).
+
+	ORDER BY guarantees total ordering of data, but for that, it has to be passed on to a single reducer, which is normally performance-intensive and therefore in strict mode, hive makes it compulsory to use LIMIT with ORDER BY so that reducer doesn’t get overburdened.
+
+
+SELECT * FROM azhadoop.simple_data2 ORDER BY sirano LIMIT 5
+
+kullaniciid|cinsiyet|yas|tahminimaas|satinaldimi|
+-----------|--------|---|-----------|-----------|
+   15628972|Erkek   | 18|      82000|          0|
+   15746737|Erkek   | 18|      52000|          0|
+   15764195|Kadın   | 18|      44000|          0|
+   15666141|Kadın   | 18|      68000|          0|
+   15578738|Kadın   | 18|      86000|          0|
+   15807909|Erkek   | 19|      85000|          0|
+   15804002|Erkek   | 19|      76000|          0|
+   15741094|Erkek   | 19|      25000|          0|
+   15672091|Kadın   | 19|      21000|          0|
+   15662901|Erkek   | 19|      70000|          0|
+   15662067|Kadın   | 19|      26000|          0|
+   15624510|Erkek   | 19|      19000|          0|
+   15724402|Kadın   | 20|      82000|          0|
+   15746139|Erkek   | 20|      86000|          0|
+   15680243|Kadın   | 20|      36000|          0|
+   15668504|Kadın   | 20|      82000|          0|
+   15595228|Kadın   | 20|      23000|          0|
+   15767871|Erkek   | 20|      74000|          0|
+   15709476|Erkek   | 20|      49000|          0|
+   15638963|Kadın   | 21|      68000|          0|
+
+
+
+2. SORT BY birden fazla reducer kullanır.
+	Her reducer sıralanmış sonuç üretir ancak reducerlar sıralamasında örtüşme vardır.
+	hive shell üzerinde
+
+set mapreduce.job.reduces=2;
+
+
+ SELECT yas, tahminimaas FROM social_media SORT BY yas DESC;
+
+		Query ID = maria_dev_20191012192440_36881adc-2ac5-4863-83ac-184993ba9eb2
+		Total jobs = 1
+		Launching Job 1 out of 1
+		Number of reduce tasks not specified. Defaulting to jobconf value of: 2
+		In order to change the average load for a reducer (in bytes):
+		  set hive.exec.reducers.bytes.per.reducer=<number>
+		In order to limit the maximum number of reducers:
+		  set hive.exec.reducers.max=<number>
+		In order to set a constant number of reducers:
+		  set mapreduce.job.reduces=<number>
+		Starting Job = job_1570898605410_0019, Tracking URL = http://sandbox-hdp.hortonworks.com:8088/proxy/application_1570898605410_0019/
+		Kill Command = /usr/hdp/2.6.5.0-292/hadoop/bin/hadoop job  -kill job_1570898605410_0019
+		Hadoop job information for Stage-1: number of mappers: 1; number of reducers: 2
+		2019-10-12 19:24:48,010 Stage-1 map = 0%,  reduce = 0%
+		2019-10-12 19:24:53,446 Stage-1 map = 100%,  reduce = 0%, Cumulative CPU 2.34 sec
+		2019-10-12 19:24:59,893 Stage-1 map = 100%,  reduce = 50%, Cumulative CPU 4.76 sec
+		2019-10-12 19:25:04,128 Stage-1 map = 100%,  reduce = 100%, Cumulative CPU 7.29 sec
+		MapReduce Total cumulative CPU time: 7 seconds 290 msec
+		Ended Job = job_1570898605410_0019
+		MapReduce Jobs Launched:
+		Stage-Stage-1: Map: 1  Reduce: 2   Cumulative CPU: 7.29 sec   HDFS Read: 22057 HDFS Write: 4474 SUCCESS
+		Total MapReduce CPU Time Spent: 7 seconds 290 msec
+
+
+
+		20      86000.0
+		20      36000.0
+		20      49000.0
+		19      19000.0
+		19      70000.0
+		19      25000.0
+		19      85000.0
+		19      76000.0
+		18      44000.0
+		18      86000.0
+		18      68000.0
+		18      52000.0
+		60      34000.0
+		60      108000.0
+		60      42000.0
+		60      102000.0
+		59      29000.0
+		59      76000.0
+		59      143000.0
+		58      47000.0
+		58      23000.0
+		58      95000.0
+		57      60000.0
+		57      26000.0
+
+	her reducer kendi içinde sıralamış ancak reducerlar arasında örtüşme var.
+
+
+3. DISTRIBUTE BY
+	Reducer lar arasında örtüşme olmadığını garantiler ancak sıralama yoktur.
+	It ensures each of N reducers gets non-overlapping ranges of the column, but doesn’t sort the output of each reducer. You end up with N or more unsorted files with non-overlapping ranges.
+
+SELECT yas, tahminimaas FROM social_media DISTRIBUTE BY yas;
+
+	Sonucun yaşa göre iki farklı parçaya ayrıldığını görüyoruz.
+
+
+4. CLUSTER BY
+	DISTRIBUTE BY SORT BY birleşimidir.
+
+	CLUSTER BY x ensures each of N reducers gets non-overlapping ranges, then sorts by those ranges at the reducers.
+
+set mapreduce.job.reduces=2;
+
+Beeline üzerinde bunun nasıl set edileceği:
+https://community.cloudera.com/t5/Support-Questions/params-that-are-allowed-to-be-modified-at-runtime-beeline/m-p/280063/highlight/true#M208647
+
+SELECT yas, tahminimaas FROM social_media CLUSTER BY yas;
+		OK
+		18      82000.0
+		18      52000.0
+		18      44000.0
+		18      86000.0
+		18      68000.0
+		20      36000.0
+		20      82000.0
+		20      86000.0
+		20      82000.0
+		20      23000.0
+		20      74000.0
+		20      49000.0
+		22      81000.0
+		22      18000.0
+		22      63000.0
+		22      55000.0
+		22      27000.0
+		24      84000.0
+		24      27000.0
+		24      32000.0
+		24      58000.0
+		24      55000.0
+		24      89000.0
+		24      19000.0
+		24      23000.0
+		24      55000.0
+		26      86000.0
+		26      30000.0
+		26      72000.0
+		26      80000.0
+		26      35000.0
+		26      84000.0
+		26      32000.0
+		26      15000.0
+		26      81000.0
+		26      17000.0
+		26      80000.0
+		26      16000.0
+		26      52000.0
+		26      118000.0
+		26      15000.0
+		26      43000.0
+		28      85000.0
+		28      79000.0
+		28      84000.0
+		28      89000.0
+		28      123000.0
+		28      37000.0
+		28      44000.0
+		28      59000.0
+		28      59000.0
+		28      87000.0
+		28      32000.0
+		28      55000.0
+		30      107000.0
+		30      87000.0
+		30      89000.0
+		30      17000.0
+		30      49000.0
+		30      15000.0
+		30      135000.0
+		30      80000.0
+		30      62000.0
+		30      116000.0
+		30      79000.0
+		32      150000.0
+		32      117000.0
+		32      135000.0
+		32      86000.0
+		32      18000.0
+		32      100000.0
+		32      18000.0
+		32      117000.0
+		32      120000.0
+		34      115000.0
+		34      43000.0
+		34      25000.0
+		34      112000.0
+		34      43000.0
+		34      72000.0
+		36      54000.0
+		36      118000.0
+		36      50000.0
+		36      60000.0
+		36      125000.0
+		36      99000.0
+		36      63000.0
+		36      144000.0
+		36      75000.0
+		36      52000.0
+		36      126000.0
+		36      33000.0
+		38      65000.0
+		38      71000.0
+		38      71000.0
+		38      50000.0
+		38      61000.0
+		38      80000.0
+		38      51000.0
+		38      50000.0
+		38      61000.0
+		38      112000.0
+		38      59000.0
+		38      55000.0
+		38      113000.0
+		40      72000.0
+		40      57000.0
+		40      107000.0
+		40      75000.0
+		40      59000.0
+		40      57000.0
+		40      71000.0
+		40      61000.0
+		40      47000.0
+		40      75000.0
+		40      78000.0
+		40      60000.0
+		40      57000.0
+		40      142000.0
+		40      65000.0
+		42      90000.0
+		42      54000.0
+		42      73000.0
+		42      54000.0
+		42      79000.0
+		42      104000.0
+		42      108000.0
+		42      75000.0
+		42      53000.0
+		42      149000.0
+		42      80000.0
+		42      80000.0
+		42      65000.0
+		42      65000.0
+		42      64000.0
+		42      70000.0
+		44      39000.0
+		44      139000.0
+		46      82000.0
+		46      96000.0
+		46      23000.0
+		46      59000.0
+		46      28000.0
+		46      74000.0
+		46      41000.0
+		46      79000.0
+		46      22000.0
+		46      88000.0
+		46      32000.0
+		46      117000.0
+		48      90000.0
+		48      29000.0
+		48      134000.0
+		48      41000.0
+		48      33000.0
+		48      141000.0
+		48      96000.0
+		48      138000.0
+		48      33000.0
+		48      35000.0
+		48      74000.0
+		48      119000.0
+		48      131000.0
+		48      30000.0
+		50      88000.0
+		50      20000.0
+		50      44000.0
+		50      36000.0
+		52      138000.0
+		52      114000.0
+		52      150000.0
+		52      90000.0
+		52      38000.0
+		52      21000.0
+		54      70000.0
+		54      26000.0
+		54      108000.0
+		54      104000.0
+		56      133000.0
+		56      60000.0
+		56      104000.0
+		58      47000.0
+		58      101000.0
+		58      23000.0
+		58      95000.0
+		58      38000.0
+		58      144000.0
+		60      102000.0
+		60      34000.0
+		60      46000.0
+		60      108000.0
+		60      83000.0
+		60      42000.0
+		60      42000.0
+		19      25000.0
+		19      76000.0
+		19      21000.0
+		19      19000.0
+		19      70000.0
+		19      26000.0
+		19      85000.0
+		21      88000.0
+		21      68000.0
+		21      72000.0
+		21      16000.0
+		23      20000.0
+		23      82000.0
+		23      66000.0
+		23      28000.0
+		23      63000.0
+		23      48000.0
+		25      80000.0
+		25      79000.0
+		25      90000.0
+		25      22000.0
+		25      87000.0
+		25      33000.0
+		27      54000.0
+		27      84000.0
+		27      89000.0
+		27      58000.0
+		27      58000.0
+		27      96000.0
+		27      137000.0
+		27      90000.0
+		27      17000.0
+		27      57000.0
+		27      20000.0
+		27      88000.0
+		27      31000.0
+		29      47000.0
+		29      83000.0
+		29      28000.0
+		29      43000.0
+		29      148000.0
+		29      83000.0
+		29      75000.0
+		29      61000.0
+		29      43000.0
+		29      80000.0
+		31      71000.0
+		31      68000.0
+		31      15000.0
+		31      76000.0
+		31      66000.0
+		31      74000.0
+		31      18000.0
+		31      118000.0
+		31      58000.0
+		31      89000.0
+		31      34000.0
+		33      113000.0
+		33      28000.0
+		33      69000.0
+		33      43000.0
+		33      60000.0
+		33      149000.0
+		33      41000.0
+		33      31000.0
+		33      51000.0
+		35      22000.0
+		35      75000.0
+		35      79000.0
+		35      55000.0
+		35      57000.0
+		35      61000.0
+		35      72000.0
+		35      77000.0
+		35      97000.0
+		35      50000.0
+		35      147000.0
+		35      60000.0
+		35      91000.0
+		35      58000.0
+		35      39000.0
+		35      72000.0
+		35      47000.0
+		35      71000.0
+		35      38000.0
+		35      59000.0
+		35      53000.0
+		35      75000.0
+		35      73000.0
+		35      25000.0
+		35      44000.0
+		35      50000.0
+		35      88000.0
+		35      23000.0
+		35      108000.0
+		35      27000.0
+		35      65000.0
+		35      20000.0
+		37      33000.0
+		37      71000.0
+		37      55000.0
+		37      72000.0
+		37      144000.0
+		37      53000.0
+		37      80000.0
+		37      80000.0
+		37      52000.0
+		37      146000.0
+		37      57000.0
+		37      74000.0
+		37      75000.0
+		37      70000.0
+		37      93000.0
+		37      62000.0
+		37      78000.0
+		37      77000.0
+		37      137000.0
+		37      79000.0
+		39      79000.0
+		39      96000.0
+		39      75000.0
+		39      71000.0
+		39      106000.0
+		39      42000.0
+		39      73000.0
+		39      61000.0
+		39      134000.0
+		39      42000.0
+		39      122000.0
+		39      59000.0
+		39      134000.0
+		39      71000.0
+		39      77000.0
+		41      72000.0
+		41      52000.0
+		41      72000.0
+		41      71000.0
+		41      60000.0
+		41      72000.0
+		41      79000.0
+		41      30000.0
+		41      63000.0
+		41      51000.0
+		41      80000.0
+		41      72000.0
+		41      59000.0
+		41      52000.0
+		41      87000.0
+		41      45000.0
+		43      112000.0
+		43      133000.0
+		43      129000.0
+		45      45000.0
+		45      131000.0
+		45      79000.0
+		45      32000.0
+		45      22000.0
+		45      22000.0
+		45      26000.0
+		47      20000.0
+		47      25000.0
+		47      144000.0
+		47      30000.0
+		47      23000.0
+		47      34000.0
+		47      107000.0
+		47      113000.0
+		47      43000.0
+		47      47000.0
+		47      51000.0
+		47      49000.0
+		47      105000.0
+		47      50000.0
+		49      28000.0
+		49      141000.0
+		49      88000.0
+		49      65000.0
+		49      36000.0
+		49      28000.0
+		49      39000.0
+		49      89000.0
+		49      86000.0
+		49      74000.0
+		51      23000.0
+		51      134000.0
+		51      146000.0
+		53      34000.0
+		53      104000.0
+		53      82000.0
+		53      72000.0
+		53      143000.0
+		55      39000.0
+		55      125000.0
+		55      130000.0
+		57      122000.0
+		57      33000.0
+		57      26000.0
+		57      74000.0
+		57      60000.0
+		59      130000.0
+		59      29000.0
+		59      76000.0
+		59      143000.0
+		59      88000.0
+		59      83000.0
+		59      42000.0
+		Time taken: 23.456 seconds, Fetched: 400 row(s)
+
+
+	Kaynak: https://saurzcode.in/2015/01/hive-sort-order-distribute-cluster/
+
+
+
+========================================================================
+							HIVE PARTITIONING 
+========================================================================
+
+5. Büyük veri HDFS gibi dosya sistemlerinde parçalara bölünerek saklanır.
+	Saklanan bu veri hive tablosu olsa bile aslında parçalara bölünmüş şekilde saklanan HDFS verisidir.
+	Peki biz bu parçaları rastgele geğil de işimize yarayacak şekilde saklasak. Örneğin İç Anadolu Bölgesi'ne ait tüm 
+	kayıtlar aynı parçada olsa. İç Anadolu Bölgesi ile ilgili sorgulara daha hızlı yanıt vermez miyim? Çünkü biliyorum ki x parçasından başkasında İç Anadolu Bölgesi yok. öyleyse diğer parçaları işlemeden cevabımı tek bir parçaya dayanarak verebileceğim. Bu bana avantaj sağlayacaktır.
+
+	Bu aşamada 
+	https://raw.githubusercontent.com/erkansirin78/datasets/master/hive/personel_salaries.txt
+	adresindeki retail_db tabloları kullanılacaktır.
+
+
+	[maria_dev@sandbox-hdp ~]$  ile
+
+wget https://raw.githubusercontent.com/erkansirin78/datasets/master/hive/personel_salaries.txt
+
+hive
+use azhadoop;
+
+6. DYNAMIC PARTITIONING
+	
+	6.1. Öncelikle dynamic partitioning özelliğini açalım.
+
+set hive.exec.dynamic.partition=true;
+
+	6.2. partition modu strict mode'dan çıkaralım.
+
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+	6.3. Dosyadan veriler doğrudan partitioned tabloya yüklenemez. Sadece normal bir tabloya yüklenebilir.
+	Önce geçici bir tabloya dosyadan yükleyip daha sonra o tablodan partitioned tabloya aktaracağız.
+
+	6.4. Geçici tabloyu oluşturma ve csv dosyadan veri yükleme:
+
+create table if not exists salaries_temp (DepartmentID int, Department string, Name string, Salary float) row format delimited fields terminated by ',' lines terminated by '\n' stored as textfile tblproperties('skip.header.line.count'='1');
+
+
+
+load data local inpath '/home/maria_dev/personel_salaries.txt' overwrite into table salaries_temp;
+
+	6.5. partitioned tablo oluşturma
+ create table if not exists salaries_prt (DepartmentID int, Name string, Salary float) partitioned by (Department string) row format delimited fields terminated by ',' lines terminated by '\n' stored as textfile tblproperties('skip.header.line.count'='1');
+
+ 	6.6. Geçici tablodan partitioned tabloya veri yükleme: Dikkat partition olacak sütun(Department) en sonda seçilir
+
+insert into table salaries_prt partition(Department) select DepartmentID, Name, Salary, Department from salaries_temp;
+		
+		Query ID = maria_dev_20191012181833_bc2d1307-9549-4f85-b7c8-00fb4dd4f01a
+		Total jobs = 3
+		Launching Job 1 out of 3
+		Number of reduce tasks is set to 0 since there's no reduce operator
+		Starting Job = job_1570898605410_0002, Tracking URL = http://sandbox-hdp.hortonworks.com:8088/proxy/application_1570898605410_0002/
+		Kill Command = /usr/hdp/2.6.5.0-292/hadoop/bin/hadoop job  -kill job_1570898605410_0002
+		Hadoop job information for Stage-1: number of mappers: 1; number of reducers: 0
+		2019-10-12 18:18:40,571 Stage-1 map = 0%,  reduce = 0%
+		2019-10-12 18:18:46,006 Stage-1 map = 100%,  reduce = 0%, Cumulative CPU 2.5 sec
+		MapReduce Total cumulative CPU time: 2 seconds 500 msec
+		Ended Job = job_1570898605410_0002
+		Stage-4 is selected by condition resolver.
+		Stage-3 is filtered out by condition resolver.
+		Stage-5 is filtered out by condition resolver.
+		Moving data to directory hdfs://sandbox-hdp.hortonworks.com:8020/apps/hive/warehouse/azhadoop.db/salaries_prt/.hive-staging_hive_2019-10-12_18-18-33_141_1914255029827989486-1/-ext-10000
+		Loading data to table azhadoop.salaries_prt partition (department=null)
+		         Time taken to load dynamic partitions: 1.146 seconds
+		        Loading partition {department=InsanKaynaklari}
+		        Loading partition {department=Satis}
+		        Loading partition {department=Muhasebe}
+		        Loading partition {department=Pazarlama}
+		         Time taken for adding to write entity : 1
+		Partition azhadoop.salaries_prt{department=InsanKaynaklari} stats: [numFiles=1, numRows=160, totalSize=2666, rawDataSize=2506]
+		Partition azhadoop.salaries_prt{department=Muhasebe} stats: [numFiles=1, numRows=134, totalSize=2183, rawDataSize=2049]
+		Partition azhadoop.salaries_prt{department=Pazarlama} stats: [numFiles=1, numRows=173, totalSize=2852, rawDataSize=2679]
+		Partition azhadoop.salaries_prt{department=Satis} stats: [numFiles=1, numRows=137, totalSize=2257, rawDataSize=2120]
+		MapReduce Jobs Launched:
+		Stage-Stage-1: Map: 1   Cumulative CPU: 2.5 sec   HDFS Read: 20106 HDFS Write: 10252 SUCCESS
+		Total MapReduce CPU Time Spent: 2 seconds 500 msec
+		OK
+		Time taken: 18.392 seconds
+
+		
+
+	6.7. FilesView üzerinden /apps/hive/warehouse/azhadoop.db/salaries_prt dizin yapısı incelenir.
+		InsanKaynaklari
+		Muhasebe
+		Pazarlama
+		Satis
+
+		dizinleri(parçaları) görülür.
+
+	6.8. partition'ları görme
+
+show partitions salaries_prt;
+
+		OK
+		department=InsanKaynaklari
+		department=Muhasebe
+		department=Pazarlama
+		department=Satis
+		Time taken: 0.659 seconds, Fetched: 4 row(s)
+
+
+7. STATIC VS DYNAMIC PARTITION hangisi ne zaman kullanılmalıdır?
+	
+	Static: Veriyi iyi tanıyorsan belki ama oldukça zahmetli. Her parça için ayrı sorgu vs. 
+
+	Dynamic: Veriyi tanımıyorsak ve çok kategori varsa. 
+
+
+8. PARTITIONED TABLODAN PARTITION SİLME
+
+alter table salaries_prt drop partition (department='InsanKaynaklari');
+
+		Dropped the partition department=InsanKaynaklari
+		OK
+		Time taken: 0.923 seconds
+
+show partitions salaries_prt;
+
+		OK
+		department=Muhasebe
+		department=Pazarlama
+		department=Satis
+		Time taken: 0.597 seconds, Fetched: 3 row(s)
+
+9. YENİ BOŞ BİR PARTITION EKLEMEK
+
+alter table salaries_prt add partition(Department='VeriBilimi');
+
+		OK
+		Time taken: 0.417 seconds
+
+show partitions salaries_prt;
+
+		OK
+		department=Muhasebe
+		department=Pazarlama
+		department=Satis
+		department=VeriBilimi
+		Time taken: 0.655 seconds, Fetched: 4 row(s)
+
+10.  YENİ BOŞ PARTITION'A VERİ EKLEMEK
+
+	Kullanılacak veri: https://raw.githubusercontent.com/erkansirin78/datasets/master/hive/veri_bilimi.txt
+	[maria_dev@sandbox-hdp ~]$ 
+wget https://raw.githubusercontent.com/erkansirin78/datasets/master/hive/veri_bilimi.txt
+
+
+ beeline -u jdbc:hive2://localhost:10000
+
+ 

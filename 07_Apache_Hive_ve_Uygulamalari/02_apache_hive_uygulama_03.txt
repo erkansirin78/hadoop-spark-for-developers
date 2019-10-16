@@ -1,0 +1,491 @@
+========================================================================
+			HIVE INTERNAL VE EXTERNAL TABLE
+========================================================================
+1. Internal table durumunda hem metadata hem veri hive tarafından yönetilir.
+	
+	1.1. Eğer bu tablo verisine erişmek istiyorsak bunu sadece hive üzerinden yapabiliriz.
+
+	1.2. Internal table drop edildiğinde metadata ve veri silinir.
+
+	1.3. Normal create table komutu varsayılan olarak internal table yaratır.
+
+	1.4. Bu tablolar için varsayılan adres: "/user/hivewarehouse/tabloadı" şeklindedir. 
+
+
+
+2. External table durumunda ise sadece metadata hive tarafından yönetilir.
+
+	2.1. Sözdizimi internal table ile aynıdır. Sadece "create external table" ile yaratılır.
+
+	2.2. Herhangi bir adres belirtilmez ise bu tablolar da "/user/hive/warehouse/tabloadı" dizininde saklanır.
+
+	2.3. Bu tabloların metadatası hive tarafından, veri ise hdfs tarafından yönetilir. Internal ile arasındaki en büyük fark budur.
+
+	2.4. External table drop edildiğinde metadata silinir ancak veri hdfs'te kalmaya devam eder.
+
+
+========================================================================
+			HIVE INSERT
+========================================================================
+
+3. Bir tablodan başka bir tabloya insert 
+
+	3.1. https://raw.githubusercontent.com/erkansirin78/datasets/master/simple_data.csv
+		adresindeki simple_data.csv osyası için hive'da tablo hazırlayalım.
+		Dosyamızda başlık bilgileri var bunu göz önünde bulundurmalıyız.
+		Başlıklar ve birkaç satır şöyle:
+
+		sirano,isim,yas,meslek,sehir,aylik_gelir
+		1,Cemal,35,Isci,Ankara,3500
+		2,Ceyda,42,Memur,Kayseri,4200
+
+	3.2. csv dosyasını wget ile lokal dizine indirme /home/maria_dev
+		Bunun için exit; ile hive shell'de çıkalım.
+
+		dosyayı indirelim
+		 wget https://raw.githubusercontent.com/erkansirin78/datasets/master/simple_data.csv
+
+		 hive shell'e tekrar girelim.
+
+		 hive
+
+		 use azhadoop;
+
+	3.3. Tablo yaratma
+create table if not exists simple_data (sirano int, isim string, yas int, meslek string, sehir string, aylik_gelir float) row format delimited fields terminated by ',' tblproperties('skip.header.line.count'='1'); 
+
+
+	3.4. Tabloya lokal dizinde bulunan (/home/maria_dev/simple_data.csv) csv dosyasından veri yüklemek
+
+load data local inpath '/home/maria_dev/simple_data.csv' overwrite into table simple_data;
+
+	Loading data to table azhadoop.simple_data
+	Table azhadoop.simple_data stats: [numFiles=2, numRows=0, totalSize=1184, rawDataSize=0]
+	OK
+	Time taken: 2.283 seconds
+
+
+	3.5. select sorgusu ile kontrol edelim:
+select * from simple_data;
+		OK
+		1       Cemal   35      Isci    Ankara  3500.0
+		2       Ceyda   42      Memur   Kayseri 4200.0
+		3       Timur   30      Müzisyen        Istanbul        9000.0
+		4       Burcu   29      Pazarlamaci     Ankara  4200.0
+		5       Yasemin 23              Bursa   4800.0
+		6       Ali     33      Memur   Ankara  4250.0
+		7       Dilek   29      Pazarlamaci     Istanbul        7300.0
+		8       Murat   31      Müzisyen        Istanbul        12000.0
+		9       Ahmet   33      Doktor  Ankara  18000.0
+		10      Muhittin        46      Berber  Istanbul        12000.0
+		11      Hicaziye        47      Tuhafiyeci      Ankara  4800.0
+		12      Harun   43      Tornacı Ankara  4200.0
+		13      Hakkı   33      Memur   Çorum   3750.0
+		14      Gülizar 37      Doktor  İzmir   14250.0
+		15      Şehmuz  41              Ankara  8700.0
+		16      Gençay  46      Berber  Ankara  8800.0
+		16      Gençay  46      Berber  Ankara  8800.0
+		Time taken: 0.157 seconds, Fetched: 17 row(s)
+
+
+		3.6. yukarıda başlık bilgilerinin select sorgusunda gelmediğini görüyoruz. 
+		Bunun için 
+set hive.cli.print.header = true;
+
+		komutunu çalıştırmalıyız.
+		İstersek bu konfigürasyon değişikliğini Ambari üzerinden kalıcı olarakk değiştirebiliriz.
+
+		Şimdi select sorgusunu tekrar deneyelim.
+
+select * from simple_data;
+		OK
+		simple_data.sirano      simple_data.isim        simple_data.yas simple_data.meslek      simple_data.sehir       simple_data.aylik_gelir
+		1       Cemal   35      Isci    Ankara  3500.0
+		2       Ceyda   42      Memur   Kayseri 4200.0
+		3       Timur   30      Müzisyen        Istanbul        9000.0
+		4       Burcu   29      Pazarlamaci     Ankara  4200.0
+		5       Yasemin 23              Bursa   4800.0
+		6       Ali     33      Memur   Ankara  4250.0
+		7       Dilek   29      Pazarlamaci     Istanbul        7300.0
+		8       Murat   31      Müzisyen        Istanbul        12000.0
+		9       Ahmet   33      Doktor  Ankara  18000.0
+		10      Muhittin        46      Berber  Istanbul        12000.0
+		11      Hicaziye        47      Tuhafiyeci      Ankara  4800.0
+		12      Harun   43      Tornacı Ankara  4200.0
+		13      Hakkı   33      Memur   Çorum   3750.0
+		14      Gülizar 37      Doktor  İzmir   14250.0
+		15      Şehmuz  41              Ankara  8700.0
+		16      Gençay  46      Berber  Ankara  8800.0
+		16      Gençay  46      Berber  Ankara  8800.0
+		Time taken: 1.222 seconds, Fetched: 17 row(s)
+
+	3.7. Şimdi simple_data tablosundan aktaracağımız tabloyu yaratalım. Şemaları aynı olmalıdır.
+	Bunun için mevcut tabloyu kullanabiliriz.
+
+show create table simple_data;
+		OK
+		createtab_stmt
+		CREATE TABLE `simple_data`(
+		  `sirano` int,
+		  `isim` string,
+		  `yas` int,
+		  `meslek` string,
+		  `sehir` string,
+		  `aylik_gelir` float)
+		ROW FORMAT DELIMITED
+		  FIELDS TERMINATED BY ','
+		STORED AS INPUTFORMAT
+		  'org.apache.hadoop.mapred.TextInputFormat'
+		OUTPUTFORMAT
+		  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+		LOCATION
+		  'hdfs://sandbox-hdp.hortonworks.com:8020/apps/hive/warehouse/azhadoop.db/simple_data'
+		TBLPROPERTIES (
+		  'numFiles'='1',
+		  'numRows'='0',
+		  'rawDataSize'='0',
+		  'skip.header.line.count'='1',
+		  'totalSize'='592',
+		  'transient_lastDdlTime'='1570829326')
+		Time taken: 0.283 seconds, Fetched: 22 row(s)
+	
+	Bu komut aslında bu tablonun nasıl yaratıldığını göster demek. Bundan yararlanıp simple_data2 tablosunu oluşturalım.
+
+CREATE TABLE IF NOT EXISTS `simple_data2`(
+  `sirano` int,
+  `isim` string,
+  `yas` int,
+  `meslek` string,
+  `sehir` string,
+  `aylik_gelir` float)
+ROW FORMAT DELIMITED
+  FIELDS TERMINATED BY ',';	
+
+
+  	3.8. Şimdi simple_data tablosundaki veriyi yeni yarattığımız boş simple_data2 tablosuna yazınız.
+
+insert into table simple_data2 select * from simple_data;
+		Query ID = maria_dev_20191011220204_d044be59-6bdc-4a7b-93bc-ed06b5275bc9
+		Total jobs = 1
+		Launching Job 1 out of 1
+		Status: Running (Executing on YARN cluster with App id application_1570817640120_0011)
+
+		--------------------------------------------------------------------------------
+		        VERTICES      STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED
+		--------------------------------------------------------------------------------
+		Map 1 ..........   SUCCEEDED      1          1        0        0       0       0
+		--------------------------------------------------------------------------------
+		VERTICES: 01/01  [==========================>>] 100%  ELAPSED TIME: 3.81 s
+		--------------------------------------------------------------------------------
+		Loading data to table azhadoop.simple_data2
+		Table azhadoop.simple_data2 stats: [numFiles=1, numRows=17, totalSize=585, rawDataSize=568]
+		OK
+		Time taken: 7.02 seconds
+
+	3.9. Şimdi kontrol edelim
+
+select * from simple_data2;
+		OK
+		1       Cemal   35      Isci    Ankara  3500.0
+		2       Ceyda   42      Memur   Kayseri 4200.0
+		3       Timur   30      Müzisyen        Istanbul        9000.0
+		4       Burcu   29      Pazarlamaci     Ankara  4200.0
+		5       Yasemin 23              Bursa   4800.0
+		6       Ali     33      Memur   Ankara  4250.0
+		7       Dilek   29      Pazarlamaci     Istanbul        7300.0
+		8       Murat   31      Müzisyen        Istanbul        12000.0
+		9       Ahmet   33      Doktor  Ankara  18000.0
+		10      Muhittin        46      Berber  Istanbul        12000.0
+		11      Hicaziye        47      Tuhafiyeci      Ankara  4800.0
+		12      Harun   43      Tornacı Ankara  4200.0
+		13      Hakkı   33      Memur   Çorum   3750.0
+		14      Gülizar 37      Doktor  İzmir   14250.0
+		15      Şehmuz  41              Ankara  8700.0
+		16      Gençay  46      Berber  Ankara  8800.0
+		16      Gençay  46      Berber  Ankara  8800.0
+		Time taken: 0.147 seconds, Fetched: 17 row(s)
+
+	evet yüklendi.
+
+	select sorgusu bir çok filtreleme içerebilir bu sorun olmaz.
+
+
+	3.10. insert into table simple_data2 select * from simple_data; komutunu tekrar çalıştırırsak üzerine append adecektir.
+	Etmesin mevcut veriyi truncate edip yeniden yazsınistiyor isek: 
+
+	Önce aynı komutu deneyip apped olayını gözleyelim:
+
+insert into table simple_data2 select * from simple_data;
+		OK
+		1       Cemal   35      Isci    Ankara  3500.0
+		2       Ceyda   42      Memur   Kayseri 4200.0
+		3       Timur   30      Müzisyen        Istanbul        9000.0
+		4       Burcu   29      Pazarlamaci     Ankara  4200.0
+		5       Yasemin 23              Bursa   4800.0
+		6       Ali     33      Memur   Ankara  4250.0
+		7       Dilek   29      Pazarlamaci     Istanbul        7300.0
+		8       Murat   31      Müzisyen        Istanbul        12000.0
+		9       Ahmet   33      Doktor  Ankara  18000.0
+		10      Muhittin        46      Berber  Istanbul        12000.0
+		11      Hicaziye        47      Tuhafiyeci      Ankara  4800.0
+		12      Harun   43      Tornacı Ankara  4200.0
+		13      Hakkı   33      Memur   Çorum   3750.0
+		14      Gülizar 37      Doktor  İzmir   14250.0
+		15      Şehmuz  41              Ankara  8700.0
+		16      Gençay  46      Berber  Ankara  8800.0
+		16      Gençay  46      Berber  Ankara  8800.0
+		1       Cemal   35      Isci    Ankara  3500.0
+		2       Ceyda   42      Memur   Kayseri 4200.0
+		3       Timur   30      Müzisyen        Istanbul        9000.0
+		4       Burcu   29      Pazarlamaci     Ankara  4200.0
+		5       Yasemin 23              Bursa   4800.0
+		6       Ali     33      Memur   Ankara  4250.0
+		7       Dilek   29      Pazarlamaci     Istanbul        7300.0
+		8       Murat   31      Müzisyen        Istanbul        12000.0
+		9       Ahmet   33      Doktor  Ankara  18000.0
+		10      Muhittin        46      Berber  Istanbul        12000.0
+		11      Hicaziye        47      Tuhafiyeci      Ankara  4800.0
+		12      Harun   43      Tornacı Ankara  4200.0
+		13      Hakkı   33      Memur   Çorum   3750.0
+		14      Gülizar 37      Doktor  İzmir   14250.0
+		15      Şehmuz  41              Ankara  8700.0
+		16      Gençay  46      Berber  Ankara  8800.0
+		16      Gençay  46      Berber  Ankara  8800.0
+		Time taken: 0.147 seconds, Fetched: 34 row(s)
+
+	Şimdi overwrite ile üzerine yazalım: Bunun için into yerine overwrite yazmamız yeterlidir.
+
+insert overwrite table simple_data2 select * from simple_data;
+		Query ID = maria_dev_20191011221737_28952b9d-a2f3-4e0d-b7c1-340f88ca9898
+		Total jobs = 1
+		Launching Job 1 out of 1
+		Status: Running (Executing on YARN cluster with App id application_1570817640120_0012)
+
+		--------------------------------------------------------------------------------
+		        VERTICES      STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED
+		--------------------------------------------------------------------------------
+		Map 1 ..........   SUCCEEDED      1          1        0        0       0       0
+		--------------------------------------------------------------------------------
+		VERTICES: 01/01  [==========================>>] 100%  ELAPSED TIME: 3.88 s
+		--------------------------------------------------------------------------------
+		Loading data to table azhadoop.simple_data2
+		Table azhadoop.simple_data2 stats: [numFiles=1, numRows=17, totalSize=585, rawDataSize=568]
+		OK
+		Time taken: 5.992 seconds
+select * from simple_data2;
+		OK
+		1       Cemal   35      Isci    Ankara  3500.0
+		2       Ceyda   42      Memur   Kayseri 4200.0
+		3       Timur   30      Müzisyen        Istanbul        9000.0
+		4       Burcu   29      Pazarlamaci     Ankara  4200.0
+		5       Yasemin 23              Bursa   4800.0
+		6       Ali     33      Memur   Ankara  4250.0
+		7       Dilek   29      Pazarlamaci     Istanbul        7300.0
+		8       Murat   31      Müzisyen        Istanbul        12000.0
+		9       Ahmet   33      Doktor  Ankara  18000.0
+		10      Muhittin        46      Berber  Istanbul        12000.0
+		11      Hicaziye        47      Tuhafiyeci      Ankara  4800.0
+		12      Harun   43      Tornacı Ankara  4200.0
+		13      Hakkı   33      Memur   Çorum   3750.0
+		14      Gülizar 37      Doktor  İzmir   14250.0
+		15      Şehmuz  41              Ankara  8700.0
+		16      Gençay  46      Berber  Ankara  8800.0
+		16      Gençay  46      Berber  Ankara  8800.0
+		Time taken: 0.141 seconds, Fetched: 17 row(s)
+
+========================================================================
+			HIVE MULTIPLE INSERT FROM ANOTHER TABLE
+========================================================================
+
+4. Hive ile mevcut bir tablodan çeşitli koşullara göre diğer tablolara veri aktarabiliriz.
+
+from source_table insert into table target_table1 select * where filter_column ='filter_condition' insert into target_table2 select * where filter_column ='filter_condition';
+
+
+========================================================================
+				HIVE ALTER SCHEMA
+========================================================================
+5. Önce değiştirmek istediğimiz tablo hakkında bilgi alalım
+
+desc simple_data;
+		OK
+		sirano                  int
+		isim                    string
+		yas                     int
+		meslek                  string
+		sehir                   string
+		aylik_gelir             float
+		Time taken: 0.492 seconds, Fetched: 6 row(s)
+		5.1. Formatlı detaylı bilgi için:
+desc formatted simple_data;
+		OK
+		# col_name              data_type               comment
+
+		sirano                  int
+		isim                    string
+		yas                     int
+		meslek                  string
+		sehir                   string
+		aylik_gelir             float
+
+		# Detailed Table Information
+		Database:               azhadoop
+		Owner:                  maria_dev
+		CreateTime:             Fri Oct 11 21:59:06 UTC 2019
+		LastAccessTime:         UNKNOWN
+		Protect Mode:           None
+		Retention:              0
+		Location:               hdfs://sandbox-hdp.hortonworks.com:8020/apps/hive/warehouse/azhadoop.db/simple_data2
+		Table Type:             MANAGED_TABLE
+		Table Parameters:
+		        COLUMN_STATS_ACCURATE   {\"BASIC_STATS\":\"true\"}
+		        numFiles                1
+		        numRows                 17
+		        rawDataSize             568
+		        totalSize               585
+		        transient_lastDdlTime   1570832262
+
+		# Storage Information
+		SerDe Library:          org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+		InputFormat:            org.apache.hadoop.mapred.TextInputFormat
+		OutputFormat:           org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+		Compressed:             No
+		Num Buckets:            -1
+		Bucket Columns:         []
+		Sort Columns:           []
+		Storage Desc Params:
+		        field.delim             ,
+		        serialization.format    ,
+		Time taken: 0.474 seconds, Fetched: 37 row(s)
+
+
+6. Mevcut bir tabloya yeni sütun eklemek:
+
+alter table simple_data add columns (soyadi string, kidem int);
+		OK
+		Time taken: 0.721 seconds
+desc simple_data;
+		OK
+		sirano                  int
+		isim                    string
+		yas                     int
+		meslek                  string
+		sehir                   string
+		aylik_gelir             float
+		soyadi                  string
+		kidem                   int
+		Time taken: 0.468 seconds, Fetched: 8 row(s)
+
+select * from simple_data;
+		OK
+		1       Cemal   35      Isci    Ankara  3500.0  NULL    NULL
+		2       Ceyda   42      Memur   Kayseri 4200.0  NULL    NULL
+		3       Timur   30      Müzisyen        Istanbul        9000.0  NULL    NULL
+		4       Burcu   29      Pazarlamaci     Ankara  4200.0  NULL    NULL
+		5       Yasemin 23              Bursa   4800.0  NULL    NULL
+		6       Ali     33      Memur   Ankara  4250.0  NULL    NULL
+		7       Dilek   29      Pazarlamaci     Istanbul        7300.0  NULL    NULL
+		8       Murat   31      Müzisyen        Istanbul        12000.0 NULL    NULL
+		9       Ahmet   33      Doktor  Ankara  18000.0 NULL    NULL
+		10      Muhittin        46      Berber  Istanbul        12000.0 NULL    NULL
+		11      Hicaziye        47      Tuhafiyeci      Ankara  4800.0  NULL    NULL
+		12      Harun   43      Tornacı Ankara  4200.0  NULL    NULL
+		13      Hakkı   33      Memur   Çorum   3750.0  NULL    NULL
+		14      Gülizar 37      Doktor  İzmir   14250.0 NULL    NULL
+		15      Şehmuz  41              Ankara  8700.0  NULL    NULL
+		16      Gençay  46      Berber  Ankara  8800.0  NULL    NULL
+		16      Gençay  46      Berber  Ankara  8800.0  NULL    NULL
+		Time taken: 0.129 seconds, Fetched: 17 row(s)
+	Yeni eklenen sütunlar hep NULL oldu.
+
+6. Sütun ismini, türünü ve sıralamasını değiştirmek:
+	soyadi -> soyadi2 yap ve isim sonrasına koy. Türü aynı kalsın. 
+	Eğer tür değişimi mevcut veriye uymaz ise o sütun tamamen NULL olur.
+
+alter table simple_data change soyadi soyadi2 string after isim;
+		OK
+		Time taken: 0.948 seconds
+desc simple_data;
+		OK
+		sirano                  int
+		isim                    string
+		soyadi2                 string
+		yas                     int
+		meslek                  string
+		sehir                   string
+		aylik_gelir             float
+		kidem                   int
+		Time taken: 0.486 seconds, Fetched: 8 row(s)
+
+7.  Tablo adını değiştirmek
+alter table simple_data rename to simple_data_renamed;
+		OK
+		Time taken: 0.84 seconds
+select * from simple_data_renamed limit 3;
+		OK
+		1       Cemal   35      NULL    Ankara  3500    NULL    NULL
+		2       Ceyda   42      NULL    Kayseri 4200    NULL    NULL
+		3       Timur   30      NULL    Istanbul        9000    NULL    NULL
+		Time taken: 0.142 seconds, Fetched: 3 row(s)
+
+8. Tablo özelliklerini değiştirmek: tblproperties
+
+alter table simple_data_renamed set tblproperties('auto.purge' = 'true');
+		OK
+		Time taken: 0.949 seconds
+
+	Değişikliği kontrol etmek için tablo hakkında formatlı bilgi alalım.
+
+desc formatted simple_data_renamed;
+		OK
+		# col_name              data_type               comment
+
+		sirano                  int
+		isim                    string
+		soyadi2                 string
+		yas                     int
+		meslek                  string
+		sehir                   string
+		aylik_gelir             float
+		kidem                   int
+
+		# Detailed Table Information
+		Database:               azhadoop
+		Owner:                  maria_dev
+		CreateTime:             Fri Oct 11 21:27:38 UTC 2019
+		LastAccessTime:         UNKNOWN
+		Protect Mode:           None
+		Retention:              0
+		Location:               hdfs://sandbox-hdp.hortonworks.com:8020/apps/hive/warehouse/azhadoop.db/simple_data_renamed
+		Table Type:             MANAGED_TABLE
+		Table Parameters:
+		        auto.purge              true
+		        last_modified_by        maria_dev
+		        last_modified_time      1570834958
+		        numFiles                1
+		        numRows                 0
+		        rawDataSize             0
+		        skip.header.line.count  1
+		        totalSize               592
+		        transient_lastDdlTime   1570834958
+
+		# Storage Information
+		SerDe Library:          org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+		InputFormat:            org.apache.hadoop.mapred.TextInputFormat
+		OutputFormat:           org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+		Compressed:             No
+		Num Buckets:            -1
+		Bucket Columns:         []
+		Sort Columns:           []
+		Storage Desc Params:
+		        field.delim             ,
+		        serialization.format    ,
+		Time taken: 0.504 seconds, Fetched: 42 row(s)
+
+9. Tablonun dosya formatını değiştirmek:
+
+alter table simple_data_renamed set fileformat avro;
+
+
+Dosya formatları için özet bilgi:
+https://www.quora.com/What-are-the-different-file-formats-in-Hadoop-and-explain-their-significance-in-detail	

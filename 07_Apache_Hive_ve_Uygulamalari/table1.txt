@@ -1,0 +1,6 @@
+499,Poole:GBR,England,141000
+501,Blackburn:GBR,England,140000
+500,Bolton:GBR,England,139020
+502,Newport:GBR,Wales,139000
+503,PrestON:GBR,England,135000
+504,Stockport:GBR,England,132813

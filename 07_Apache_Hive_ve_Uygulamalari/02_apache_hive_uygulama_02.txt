@@ -1,0 +1,215 @@
+========================================================================
+			HIVE SHELL İLE VERİ TABANI TEMEL İŞLEMLER
+========================================================================
+
+1. Komut satırından Hive shell bağlantısı
+	
+	Yöntem-1:
+	---------
+	hive
+	
+	
+	Yöntem-2
+	-----------
+	beeline -u jdbc:hive2://localhost:10000
+	
+2. Veri tabanlarını listeleme
+
+show databases;
+
+	Beklenen çıktı:
+	OK
+	default
+	foodmart
+	Time taken: 4.916 seconds, Fetched: 2 row(s)
+
+3. Yeni veri tabanı yaratma (hatayı önleyerek if exists)
+
+create database if not exists azhadoop;
+		OK
+		Time taken: 0.656 seconds
+
+	
+	
+4. Veri tabanına ait bilgileri öğrenmek
+
+describe database azhadoop;
+
+		OK
+		azhadoop                hdfs://sandbox-hdp.hortonworks.com:8020/apps/hive/warehouse/azhadoop.db root    USER
+		Time taken: 1.696 seconds, Fetched: 1 row(s)
+
+
+5. Veri tabanını silme
+drop database azhadoop;
+
+6. veri tabanı oluştururken yorum yazma;
+
+create database if not exists azhadoop comment 'This database is for Hadoop training';
+
+7. Veri tabanı hakkında daha detaylı bilgi edinme
+
+describe database extended azhadoop;
+		OK
+		azhadoop        This database is for Hadoop training    hdfs://sandbox-hdp.hortonworks.com:8020/apps/hive/warehouse/azhadoop.db root    USER
+		Time taken: 0.263 seconds, Fetched: 1 row(s)
+
+
+
+
+========================================================================
+			HIVE SHELL İLE TABLO TEMEL İŞLEMLER
+========================================================================
+
+8. Internel ve external table olmak üzere iki farklı tablo vardır. 
+Farkları metedata'larının nasıl tutulduğuna göre değişir. 
+
+Internal table için hem metadata hem gerçek data hive tarafından tutulurken external table da sadece metadata hive tarafından tutulur.
+ Eğer bir internal table drop edilirse hem metadata hem data ikisi de silinir.
+ Şayet external table drop edilirse sadece metadata silinir veri hdfs'de kalır.
+ 
+ arsayılan olarak hive internal table yaratır.
+ 
+9. Tablo işlemlerini hangi veritabanında yapacak isek seçmeliyiz.
+ use azhadoop;
+		OK
+		Time taken: 0.227 seconds
+
+10. Tablo yaratma
+create table if not exists table1 (col1 string, col2 array<string>, col3 string, col4 int) row format delimited fields terminated by ',' collection items terminated by ':' lines terminated by '\n'  stored as textfile;
+
+		OK
+		Time taken: 1.068 seconds
+
+
+	10.1.
+	fields terminated by ',': sütunlar "," ile ayrılmış
+	collection items terminated by ':': sütunlardan biri array içeriyor ise array elemenları ':' ile ayrılmıştır.
+	lines terminated by '\n': her yeni satır başı yeni bir satırdır.
+
+	10.2.
+	row format delimited fields terminated by ',' collection items terminated by ':' lines terminated by '\n'  stored as textfile;
+	bu komutlar aynı zamanda varsayılan değerler olduğundan atlanabilir.
+
+11. varsayılan değerlerle tablo yaratma
+
+create table if not exists table2 (col1 string, col2 array<string>, col3 string, col4 int);
+
+		OK
+		Time taken: 0.636 seconds
+
+
+12. Hive tablolarının HDFS adresleri vardır. Varsayılan internaş tablo dizinleri 
+	/user/hive/warehouse dizinidir.
+
+	Farklı bir dizin kullanmak için bunu tablo oluştururken belirtiriz.
+
+create table if not exists table3 (col1 string, col2 array<string>, col3 string, col4 int) row format delimited fields terminated by ',' collection items terminated by ':' lines terminated by '\n'  stored as textfile location '/user/maria_dev/table3';
+
+		OK
+		Time taken: 0.877 seconds
+
+
+
+
+13. HDFS'deki bir dosyadan hive tablosuna veri yükleme. Aslında burada yapılan iş dosya ile metadata eşleştirmesidir.
+
+	13.1. table1.txt dosyasını Ambari File View ile /user/admin dizinine yükleyiniz.
+	
+	13.2.  load data inpath '/user/admin/table1.txt' into table table1;
+		Loading data to table azhadoop.table1
+		Failed with exception org.apache.hadoop.security.AccessControlException: Permission denied. user=maria_dev is not the owner of inode=table1.txt
+				at org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker.checkOwner(FSPermissionChecker.java:285)
+				at org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker.checkPermission(FSPermissionChecker.java:260)
+				at org.apache.ranger.authorization.hadoop.RangerHdfsAuthorizer$RangerAccessControlEnforcer.checkDefaultEnforcer(RangerHdfsAuthorizer.java:427)
+				at org.apache.ranger.authorization.hadoop.RangerHdfsAuthorizer$RangerAccessControlEnforcer.checkPermission(RangerHdfsAuthorizer.java:364)
+				at org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker.checkPermission(FSPermissionChecker.java:190)
+				at org.apache.hadoop.hdfs.server.namenode.FSDirectory.checkPermission(FSDirectory.java:1950)
+				at org.apache.hadoop.hdfs.server.namenode.FSDirectory.checkPermission(FSDirectory.java:1934)
+				at org.apache.hadoop.hdfs.server.namenode.FSDirectory.checkOwner(FSDirectory.java:1903)
+				at org.apache.hadoop.hdfs.server.namenode.FSDirAttrOp.setOwner(FSDirAttrOp.java:82)
+				at org.apache.hadoop.hdfs.server.namenode.FSNamesystem.setOwner(FSNamesystem.java:1877)
+				at org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.setOwner(NameNodeRpcServer.java:828)
+				at org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolServerSideTranslatorPB.setOwner(ClientNamenodeProtocolServerSideTranslatorPB.java:476)
+				at org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos$ClientNamenodeProtocol$2.callBlockingMethod(ClientNamenodeProtocolProtos.java)
+				at org.apache.hadoop.ipc.ProtobufRpcEngine$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine.java:640)
+				at org.apache.hadoop.ipc.RPC$Server.call(RPC.java:982)
+				at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2351)
+				at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2347)
+				at java.security.AccessController.doPrivileged(Native Method)
+				at javax.security.auth.Subject.doAs(Subject.java:422)
+				at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1869)
+				at org.apache.hadoop.ipc.Server$Handler.run(Server.java:2347)
+
+		FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.MoveTask
+
+		Bu hatanın sebebi maria_dev kullanıcısının bu dosyaya sahip olmaması
+
+	13.3. Aynı dosyayı hdfs /user/maria_dev dizinine de yükleyelim.
+	
+	13.4. admin kullanıcısı ile upload ettiğimiz için yine sahiplik admin olacaktır. Komut satırından bunu değiştirelim.
+	
+sudo -u hdfs hdfs dfs -chown maria_dev:hdfs /user/maria_dev/table1.txt
+	şimdi sahiplik değişti.
+	
+	13.5. 
+load data inpath '/user/maria_dev/table1.txt' into table table1;
+
+		Loading data to table azhadoop.table1
+		Failed with exception org.apache.hadoop.security.AccessControlException: User null does not belong to hadoop
+				at org.apache.hadoop.hdfs.server.namenode.FSDirAttrOp.setOwner(FSDirAttrOp.java:89)
+				at org.apache.hadoop.hdfs.server.namenode.FSNamesystem.setOwner(FSNamesystem.java:1877)
+				at org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.setOwner(NameNodeRpcServer.java:828)
+				at org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolServerSideTranslatorPB.setOwner(ClientNamenodeProtocolServerSideTranslatorPB.java:476)
+				at org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos$ClientNamenodeProtocol$2.callBlockingMethod(ClientNamenodeProtocolProtos.java)
+				at org.apache.hadoop.ipc.ProtobufRpcEngine$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine.java:640)
+				at org.apache.hadoop.ipc.RPC$Server.call(RPC.java:982)
+				at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2351)
+				at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2347)
+				at java.security.AccessController.doPrivileged(Native Method)
+				at javax.security.auth.Subject.doAs(Subject.java:422)
+				at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1869)
+				at org.apache.hadoop.ipc.Server$Handler.run(Server.java:2347)
+
+		FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.MoveTask
+			
+	13.6. Bu hatayı düzeltmek için önce tabloyu truncate edelim.
+	
+	truncate table table1;
+	
+	daha sonra /user/maria_dev dizinine table1.txt dosyasını yükleyelim.
+	
+	yine admin ownership ile yükleyecektir. Onu maria_dev:hadoop yapalım.
+	
+ sudo -u hdfs hdfs dfs -chown maria_dev:hadoop /user/maria_dev/table1.txt
+
+	Bu sefer hata almadan başarıtla yükledi.
+
+
+	13.7. kontrol
+
+select * from table1;
+		OK
+		499     ["Poole","GBR"] England 141000
+		501     ["Blackburn","GBR"]     England 140000
+		500     ["Bolton","GBR"]        England 139020
+		502     ["Newport","GBR"]       Wales   139000
+		503     ["PrestON","GBR"]       England 135000
+		504     ["Stockport","GBR"]     England 132813
+		Time taken: 0.524 seconds, Fetched: 6 row(s)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

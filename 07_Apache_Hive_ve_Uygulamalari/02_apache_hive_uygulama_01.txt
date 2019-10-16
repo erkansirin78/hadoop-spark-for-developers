@@ -1,4 +1,4 @@
-﻿1. Ambari Hive2 View üzerinden Uplad Table ile adult veri seti Hive'a tablo olarak yüklenir ve örnek sorgular çalıştırılır.
+﻿1. Ambari Hive2 View üzerinden Upload Table ile adult veri seti Hive'a tablo olarak yüklenir ve örnek sorgular çalıştırılır.
 
 
 2. Sorgular esnasında YARN Resource Manager arayüzündeki değişiklikler gözlemlenir.
@@ -14,21 +14,27 @@
 4. DBeaver Hive Bağlantısı ve Hive üzerinde sorgu çalıştırma
 
 
-5. Hive ve Impala 
+5. Hive ve Impala karşılaştırma: 
 	Impala Hive'ın Cloudera'daki karşılığı
 	Impala'nın bir avantajı BI tarzındaki sorguları
 	Ayrıca Impala sorgu performansı olarak da daha hızlı
-	Ancak Impala Cloudera ile sınırlı bir araç Hive daha geniş ve açık bir proje
+	Ancak Impala Cloudera ile sınırlı bir araç, Hive daha geniş ve açık bir proje
 	
 6. Beeline ile Hive komut satırına bağlanma:
-[root@sandbox-hdp ~]# beeline -u jdbc:hive2://localhost:10000
+[root@sandbox-hdp ~]# 
+beeline -u jdbc:hive2://localhost:10000
+
+	6.1. describe <database_name>
+
+	6.2. Beeline çıkış:
+!quit
 
 
-
-7. Kuyruk adı belirterek hive sorgusu çalıştırmak
+7. Kuyruk adı belirterek hive sorgusu çalıştırmak (kuyruk yarn üzerinde tanımlı olmalıdır)
 Sorgu dan önce 
  jdbc:hive2://localhost:10000> set tez.queue.name=hive;
 
+ Bunu mapreduce için yapamayız. Runtime esnasında mümkün değil.
 
 8. Sorgu:
 0: jdbc:hive2://localhost:10000>  select workclass, COUNT(*) FROM `default`.adult_preprocessed GROUP by workclass;
@@ -61,7 +67,21 @@ select workclass, COUNT(*) FROM `default`.adult_preprocessed GROUP by workclass;
 
 
 
+11.
+
+Mysq veri tabanına bağlama:
+=====================================================
+HDP 2.6.5 Kullananlar:
+mysql -u root -p 
+Hortonworks1
 
 
 
+HDP 2.6.4 kullananlar doğrudan
+mysql -u root -p 
+hadoop
 
+
+Mysql root password sıfırlama
+--------------------------------
+https://www.veribilimiokulu.com/pratik-bilgiler-pratik-komutlar-3/#bolum-3

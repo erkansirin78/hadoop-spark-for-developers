@@ -1,4 +1,14 @@
-PYTHON 3.6 KURULUMU
+
+1. PYTHON 3.6 KURULUMU EĞER KURULU DEĞİL İSE
+-------------------------------------------------
+
+Kontrol
+[root@sandbox-hdp ~]# python3.6 -V
+Python 3.6.5
+
+Eğer kurulu ise bu adımı atlayabilirsiniz. ZEPPELIN SPARK2 INTERPRETER AYARLARI:'dan devam edebilirsiniz.
+
+
 Yararlanılan kaynak :https://www.digitalocean.com/community/tutorials/how-to-install-python-3-and-set-up-a-local-programming-environment-on-centos-7
 
 		[root@sandbox-hdp /]# yum -y update
@@ -26,7 +36,8 @@ Yararlanılan kaynak :https://www.digitalocean.com/community/tutorials/how-to-in
 		[root@sandbox-hdp /]# pip3.6 install pandas matplotlib sklearn seaborn  findspark
 		
 		
-ZEPPELIN SPARK2 INTERPRETER AYARLARI:
+2. ZEPPELIN SPARK2 INTERPRETER AYARLARI:
+-------------------------------------------------
 			
 		1. Ambari Arayüz -> Sol taraftaki Servislerden Zeppelin Notebook'u seç
 		
@@ -44,7 +55,8 @@ ZEPPELIN SPARK2 INTERPRETER AYARLARI:
 		
 		8. Save deyip çıkalım.
 		
-SPARK2 ENVIRONMENT AYARLARI:
+3. SPARK2 ENVIRONMENT AYARLARI:
+-------------------------------------------------
 
 		1. Ambari arayüzden Sol taraftaki servislerden Spark2 seçelim.
 		
@@ -64,7 +76,8 @@ SPARK2 ENVIRONMENT AYARLARI:
 		6. Sarı döngü yuvarlağı ile başka servisleri de başlatmak istiyorsa hepsini yeniden başlatalım.
 		
 		
-ZEPPELIN PYSPARK TEST:
+4. ZEPPELIN PYSPARK TEST:
+-------------------------------------------------
 		1. Zeppelin Ana sayfada (http://sandbox-hdp.hortonworks.com:9995/#/)
 		
 		2. Create new note tıklayalım.
