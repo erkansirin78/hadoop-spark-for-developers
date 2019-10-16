@@ -25,18 +25,25 @@ object SparkHighLevel {
 
     df.filter(df.col("meslek").isNull).show()
 
-    df
+    val df2 = df
       .withColumn("meslek_filled",
       F.when(df.col("meslek").isNull, "Unknown")
     .otherwise(df.col("meslek")))
       .drop("meslek")
       .withColumnRenamed("meslek_filled","meslek")
-      .show()
+      //.show()
 
     // group by ops
-    df.groupBy("meslek")
+    val df3 = df2.groupBy("meslek")
       .agg(F.mean("aylik_gelir").as("avg_salary"))
       .orderBy(F.desc("avg_salary"))
+      //.show()
+
+    df3.withColumn("avg_salary_formatted",
+      F.format_number(df3.col("avg_salary"), 2))
       .show()
+
+
+
   }
 }
