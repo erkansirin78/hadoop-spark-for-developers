@@ -1,0 +1,17 @@
+PRACTICE:
+=============
+1. Use Zeppelin
+
+2. Read simple_data.csv file from hdfs 
+
+3. concat meslek and sehir columns with - into a new column named sehir_meslek
+
+4. write results into /user/zeppelin directory.
+
++------+--------+---+--------+-----------+-----------+---------------+
+|sirano|    isim|yas|   sehir|aylik_gelir|     meslek| sehir_meslek  |
++------+--------+---+--------+-----------+-----------+---------------|
+|     1|   Cemal| 35|  Ankara|       3500|       Isci|Ankara - Isci  |
+|     2|   Ceyda| 42| Kayseri|       4200|      Memur|Kayseri - Memur|
+|      |	|   |        |	         |	     |		     |
+|      |	|   |	     |	         |	     |		     |
