@@ -45,7 +45,7 @@ mysql> GRANT ALL PRIVILEGES ON azhadoop.* TO 'root'@'sandbox-hdp.hortonworks.com
 use azhadoop;
 
 
-5. Create mysql tables 
+ Create mysql tables 
 create table if not exists categories(categoryId int, categoryDepartmentId int, categoryName VARCHAR(50));
 create table if not exists customers(customerId int, customerFName VARCHAR(50), customerLName VARCHAR(50), customerEmail VARCHAR(50), customerPassword VARCHAR(50), customerStreet VARCHAR(50), customerCity VARCHAR(50), customerState VARCHAR(5), customerZipcode VARCHAR(15));
 create table if not exists departments(departmentId int, departmentName VARCHAR(20));
