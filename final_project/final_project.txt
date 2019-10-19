@@ -1,3 +1,6 @@
+FINAL PROJECT
+========================
+
 1. Use retail_db from https://github.com/erkansirin78/datasets/tree/master/retail_db
 
 2. Import all retail_db into mysql azhadoop database
@@ -10,55 +13,82 @@
 
 
 
-Create mysql tables 
-create table products(productId int, productCategoryId int, productName VARCHAR(255), productDescription VARCHAR(255), productPrice double, productImage VARCHAR(255));
+SOLUTION
+=========================
+1. connect sandbox with maria_dev, create retail_db directory and import all csv files
+
+[maria_dev@sandbox-hdp ~]$ mkdir retail_db
+[maria_dev@sandbox-hdp ~]$ cd retail_db/
 
 
-create table orders(orderId int, orderDate VARCHAR(50), orderCustomerId int, orderStatus VARCHAR(20));
+[maria_dev@sandbox-hdp retail_db]$ wget https://raw.githubusercontent.com/erkansirin78/datasets/master/retail_db/categories.csv
+[maria_dev@sandbox-hdp retail_db]$ wget https://raw.githubusercontent.com/erkansirin78/datasets/master/retail_db/customers.csv
+[maria_dev@sandbox-hdp retail_db]$ wget https://raw.githubusercontent.com/erkansirin78/datasets/master/retail_db/departments.csv
+[maria_dev@sandbox-hdp retail_db]$ wget https://raw.githubusercontent.com/erkansirin78/datasets/master/retail_db/order_items.csv
+[maria_dev@sandbox-hdp retail_db]$ wget https://raw.githubusercontent.com/erkansirin78/datasets/master/retail_db/orders.csv
+[maria_dev@sandbox-hdp retail_db]$ wget https://raw.githubusercontent.com/erkansirin78/datasets/master/retail_db/products.csv
 
 
-create table order_items(orderItemName int, orderItemOrderId int, orderItemProductId int, orderItemQuantity int, orderItemSubTotal double, orderItemProductPrice double);
+2. connect mysql with root user 
+[maria_dev@sandbox-hdp retail_db]$ mysql -u root -p
+Enter password:hortonworks1
+
+3. create azhadoop database
+mysql> create database if not exists azhadoop;
 
 
-create table departments(departmentId int, departmentName VARCHAR(20));
+4. grand privileges to root user on azhadoop 
+mysql> GRANT ALL PRIVILEGES ON azhadoop.* TO 'root'@'localhost';
+mysql> GRANT ALL PRIVILEGES ON azhadoop.* TO 'root'@'sandbox-hdp.hortonworks.com';
 
-create table customers(customerId int, customerFName VARCHAR(50), customerLName VARCHAR(50), customerEmail VARCHAR(50), customerPassword VARCHAR(50), customerStreet VARCHAR(50), customerCity VARCHAR(50), customerState VARCHAR(5), customerZipcode VARCHAR(15));
+5. select azhadoop database 
+use azhadoop;
 
 
-create table categories(categoryId int, categoryDepartmentId int, categoryName VARCHAR(50));
+5. Create mysql tables 
+create table if not exists categories(categoryId int, categoryDepartmentId int, categoryName VARCHAR(50));
+create table if not exists customers(customerId int, customerFName VARCHAR(50), customerLName VARCHAR(50), customerEmail VARCHAR(50), customerPassword VARCHAR(50), customerStreet VARCHAR(50), customerCity VARCHAR(50), customerState VARCHAR(5), customerZipcode VARCHAR(15));
+create table if not exists departments(departmentId int, departmentName VARCHAR(20));
+create table if not exists order_items(orderItemName int, orderItemOrderId int, orderItemProductId int, orderItemQuantity int, orderItemSubTotal double, orderItemProductPrice double);
+create table if not exists orders(orderId int, orderDate VARCHAR(50), orderCustomerId int, orderStatus VARCHAR(20));
+create table if not exists products(productId int, productCategoryId int, productName VARCHAR(255), productDescription VARCHAR(255), productPrice double, productImage VARCHAR(255));
 
 
-INSERT DATA MYSQL
+6. load csv data into tables
 
-LOAD DATA LOCAL INFILE '/root/retail_db/products.csv' INTO TABLE products
+LOAD DATA LOCAL INFILE '/home/maria_dev/retail_db/categories.csv' INTO TABLE categories
+FIELDS TERMINATED BY ',' 
+ENCLOSED BY '"' 
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS;
+
+LOAD DATA LOCAL INFILE '/home/maria_dev/retail_db/customers.csv' INTO TABLE customers
+FIELDS TERMINATED BY ',' 
+ENCLOSED BY '"' 
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS;
+
+LOAD DATA LOCAL INFILE '/home/maria_dev/retail_db/departments.csv' INTO TABLE departments
+FIELDS TERMINATED BY ',' 
+ENCLOSED BY '"' 
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS;
+
+LOAD DATA LOCAL INFILE '/home/maria_dev/retail_db/order_items.csv' INTO TABLE order_items
 FIELDS TERMINATED BY ',' 
 ENCLOSED BY '"' 
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS;
 
 
-LOAD DATA LOCAL INFILE '/root/retail_db/orders.csv' INTO TABLE orders
+LOAD DATA LOCAL INFILE '/home/maria_dev/retail_db/orders.csv' INTO TABLE orders
 FIELDS TERMINATED BY ',' 
 ENCLOSED BY '"' 
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS;
 
 
-LOAD DATA LOCAL INFILE '/root/retail_db/order_items.csv' INTO TABLE order_items
-FIELDS TERMINATED BY ',' 
-ENCLOSED BY '"' 
-LINES TERMINATED BY '\n'
-IGNORE 1 ROWS;
-
-LOAD DATA LOCAL INFILE '/root/retail_db/departments.csv' INTO TABLE departments
-FIELDS TERMINATED BY ',' 
-ENCLOSED BY '"' 
-LINES TERMINATED BY '\n'
-IGNORE 1 ROWS;
-
-
-
-LOAD DATA LOCAL INFILE '/root/retail_db/customers.csv' INTO TABLE customers
+LOAD DATA LOCAL INFILE '/home/maria_dev/retail_db/products.csv' INTO TABLE products
 FIELDS TERMINATED BY ',' 
 ENCLOSED BY '"' 
 LINES TERMINATED BY '\n'
@@ -66,18 +96,37 @@ IGNORE 1 ROWS;
 
 
 
-LOAD DATA LOCAL INFILE '/root/retail_db/categories.csv' INTO TABLE categories
-FIELDS TERMINATED BY ',' 
-ENCLOSED BY '"' 
-LINES TERMINATED BY '\n'
-IGNORE 1 ROWS;
+7. check  loaded data
+ select * from categories limit 5;
+ select * from customers limit 5;
+ select * from departments limit 5;
+ select * from order_items limit 5;
+ select * from orders limit 5;
+ select * from products limit 5;
+  
+
+8. exit form mysql
+\q 
 
 
+9. Enter hive end create a database named azhadoop
+[maria_dev@sandbox-hdp retail_db]$ hive
+create database if not exists azhadoop;
+quit;
 
+
+10. add maria_dev user into hadoop group to prevent possible errors
+sudo -i 
+[root@sandbox-hdp ~]# usermod -a -G hadoop maria_dev
+
+[root@sandbox-hdp ~]# su - maria_dev
+
+
+11. import mysql tables into hive with sqoop
 
 sqoop import --connect jdbc:mysql://sandbox-hdp.hortonworks.com/azhadoop \
 --driver com.mysql.jdbc.Driver \
---username root --password hadoop \
+--username root --password hortonworks1 \
 --query "select * from categories WHERE \$CONDITIONS" \
 --m 1 --hive-import --create-hive-table \
 --hive-table azhadoop.categories --target-dir /tmp/categories
@@ -86,7 +135,7 @@ sqoop import --connect jdbc:mysql://sandbox-hdp.hortonworks.com/azhadoop \
 
 sqoop import --connect jdbc:mysql://sandbox-hdp.hortonworks.com/azhadoop \
 --driver com.mysql.jdbc.Driver \
---username root --password hadoop \
+--username root --password hortonworks1 \
 --query "select * from customers WHERE \$CONDITIONS" \
 --m 1 --hive-import --create-hive-table \
 --hive-table azhadoop.customers --target-dir /tmp/customers
@@ -95,26 +144,26 @@ sqoop import --connect jdbc:mysql://sandbox-hdp.hortonworks.com/azhadoop \
 
 sqoop import --connect jdbc:mysql://sandbox-hdp.hortonworks.com/azhadoop \
 --driver com.mysql.jdbc.Driver \
---username root --password hadoop \
+--username root --password hortonworks1 \
 --query "select * from departments WHERE \$CONDITIONS" \
 --m 1 --hive-import --create-hive-table \
 --hive-table azhadoop.departments --target-dir /tmp/departments
 
 
 
+
 sqoop import --connect jdbc:mysql://sandbox-hdp.hortonworks.com/azhadoop \
 --driver com.mysql.jdbc.Driver \
---username root --password hadoop \
+--username root --password hortonworks1 \
 --query "select * from order_items WHERE \$CONDITIONS" \
 --m 1 --hive-import --create-hive-table \
 --hive-table azhadoop.order_items --target-dir /tmp/order_items
 
 
 
-
 sqoop import --connect jdbc:mysql://sandbox-hdp.hortonworks.com/azhadoop \
 --driver com.mysql.jdbc.Driver \
---username root --password hadoop \
+--username root --password hortonworks1 \
 --query "select * from orders WHERE \$CONDITIONS" \
 --m 1 --hive-import --create-hive-table \
 --hive-table azhadoop.orders --target-dir /tmp/orders
@@ -122,7 +171,25 @@ sqoop import --connect jdbc:mysql://sandbox-hdp.hortonworks.com/azhadoop \
 
 sqoop import --connect jdbc:mysql://sandbox-hdp.hortonworks.com/azhadoop \
 --driver com.mysql.jdbc.Driver \
---username root --password hadoop \
+--username root --password hortonworks1 \
 --query "select * from products WHERE \$CONDITIONS" \
 --m 1 --hive-import --create-hive-table \
 --hive-table azhadoop.products --target-dir /tmp/products
+
+12. check hive tables
+on hive shell 
+
+select * from azhadoop.categories limit 5;
+select * from azhadoop.customers limit 5;
+select * from azhadoop.departments limit 5;
+select * from azhadoop.order_items limit 5;
+select * from azhadoop.orders limit 5;
+select * from azhadoop.products limit 5;
+
+
+13. Rest is in Spark IntelliJ Maven Project 
+
+
+
+
+
