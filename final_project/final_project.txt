@@ -188,8 +188,36 @@ select * from azhadoop.products limit 5;
 
 
 13. Rest is in Spark IntelliJ Maven Project 
+https://github.com/erkansirin78/hadoop-spark-for-developers/tree/master/final_project/SparkHive
 
 
+Spark application computes and writes the results as hive table 
 
+The results: most cancelled 10 categories.
 
+SELECT * FROM most_cancelled_catg limit 10
 
+categoryname        |total             |
+--------------------|------------------|
+Fishing             |134393.27999999965|
+Cleats              | 85785.70000000006|
+Cardio Equipment    | 81351.92999999996|
+Camping & Hiking    |  80094.6600000001|
+Water Sports        |  66196.6899999998|
+Women's Apparel     |             65750|
+Men's Footwear      | 60705.32999999974|
+Indoor/Outdoor Games| 58126.74000000006|
+Shop By Sport       |27423.440000000013|
+Electronics         |            5685.5|
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 

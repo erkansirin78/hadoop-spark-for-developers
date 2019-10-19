@@ -1,2 +1,5 @@
 ignored_files
 final_project/SparkHive/target
+06_MapReduce_ve_Apache_Tez_Teori/mapreducewordcount/target
+15_Apache_Spark_Giris/sparkintro/target
+26_Apache_Structured_Streaming_Yeni_API/SparkStreamingExample/target
