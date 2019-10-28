@@ -1,0 +1,267 @@
+========================================================================
+							BUCKETING 
+========================================================================
+Her ikisi de veri organizasyonu ile ilgilidir.
+Partitions, verinin kategorik bir sütun bazında farklı klasörlerde depolanmasıdır.
+	Aynı kategoriler bir arada olur sorgu performansı artar.
+Bucket, klasör değil dosyadır. Aynı partitions altında birden fazla klasör olabilir.
+	Kendi başına veya partitioning ile birlikte kullanılabilir.
+	Hangi kayıt hangi bucket içinde depolanacağı hashing algoritması tarafından belirlenir.
+
+
+1. Bucketing tablo oluşturma
+
+hive
+uze azhadoop;
+	
+	bucketing'i açma
+set hive.enforce.bucketing = true;
+set hive.exec.dynamic.partition.mode = nonstrict;
+
+	Tablo oluşturmayı kolaylaştırmak için başka tablodan yararlanalım
+show create table salaries_temp;
+OK
+CREATE TABLE `salaries_temp`(
+  `departmentid` int,
+  `department` string,
+  `name` string,
+  `salary` float)
+ROW FORMAT DELIMITED
+  FIELDS TERMINATED BY ','
+  LINES TERMINATED BY '\n'
+STORED AS INPUTFORMAT;
+
+	Bunu değiştiriyorum
+	
+create table if not exists `salaries_bck`(
+  `departmentid` int,
+  `name` string,
+  `salary` float)
+partitioned by (`department` string)
+clustered by (salary) into 4 buckets
+row format delimited
+fields terminated by ','
+lines terminated by '\n'
+stored as textfile
+tblproperties('skip.header.line.count'='1');
+
+
+2. Şimdi içine veri kaydedelim 
+	
+insert into table salaries_bck partition (salary) select * from salaries_temp;
+		FAILED: SemanticException Partition spec {salary=null} contains non-partition columns
+		hive> insert overwrite table salaries_bck partition (salary) select * from salaries_temp;
+		FAILED: SemanticException Partition spec {salary=null} contains non-partition columns
+		hive> insert overwrite table salaries_bck partition (department) select * from salaries_prt;
+		Query ID = maria_dev_20191022213038_7dad6645-5b84-44fa-999a-a00c5d3bbfce
+		Total jobs = 1
+		Launching Job 1 out of 1
+		Number of reduce tasks determined at compile time: 4
+		In order to change the average load for a reducer (in bytes):
+		  set hive.exec.reducers.bytes.per.reducer=<number>
+		In order to limit the maximum number of reducers:
+		  set hive.exec.reducers.max=<number>
+		In order to set a constant number of reducers:
+		  set mapreduce.job.reduces=<number>
+		Starting Job = job_1571769404105_0013, Tracking URL = http://sandbox-hdp.hortonworks.com:8088/proxy/application_1571769404105_0013/
+		Kill Command = /usr/hdp/2.6.5.0-292/hadoop/bin/hadoop job  -kill job_1571769404105_0013
+		Hadoop job information for Stage-1: number of mappers: 1; number of reducers: 4
+		2019-10-22 21:30:46,772 Stage-1 map = 0%,  reduce = 0%
+		2019-10-22 21:30:52,172 Stage-1 map = 100%,  reduce = 0%, Cumulative CPU 2.42 sec
+		2019-10-22 21:30:59,545 Stage-1 map = 100%,  reduce = 25%, Cumulative CPU 5.07 sec
+		2019-10-22 21:31:04,865 Stage-1 map = 100%,  reduce = 50%, Cumulative CPU 7.54 sec
+		2019-10-22 21:31:08,125 Stage-1 map = 100%,  reduce = 75%, Cumulative CPU 9.73 sec
+		2019-10-22 21:31:12,454 Stage-1 map = 100%,  reduce = 100%, Cumulative CPU 12.24 sec
+		MapReduce Total cumulative CPU time: 12 seconds 240 msec
+		Ended Job = job_1571769404105_0013
+		Loading data to table azhadoop.salaries_bck partition (department=null)
+				 Time taken to load dynamic partitions: 1.117 seconds
+				Loading partition {department=Muhasebe}
+				Loading partition {department=Satis}
+				Loading partition {department=VeriBilimi}
+				Loading partition {department=Pazarlama}
+				 Time taken for adding to write entity : 2
+		Partition azhadoop.salaries_bck{department=Muhasebe} stats: [numFiles=4, numRows=133, totalSize=2165, rawDataSize=2032]
+		Partition azhadoop.salaries_bck{department=Pazarlama} stats: [numFiles=4, numRows=172, totalSize=2834, rawDataSize=2662]
+		Partition azhadoop.salaries_bck{department=Satis} stats: [numFiles=4, numRows=136, totalSize=2237, rawDataSize=2101]
+		Partition azhadoop.salaries_bck{department=VeriBilimi} stats: [numFiles=4, numRows=3, totalSize=51, rawDataSize=48]
+		MapReduce Jobs Launched:
+		Stage-Stage-1: Map: 1  Reduce: 4   Cumulative CPU: 12.24 sec   HDFS Read: 31760 HDFS Write: 7579 SUCCESS
+		Total MapReduce CPU Time Spent: 12 seconds 240 msec
+		OK
+		salaries_prt.departmentid       salaries_prt.name       salaries_prt.salary     salaries_prt.department
+		Time taken: 40.009 seconds
+
+
+		Dört bucket belirlediğimiz için 4 tane reduce task olduğuna dikkat ediniz.
+		
+		
+3. Parçaları listeleyelim 
+
+show partitions salaries_bck;
+		OK
+		partition
+		department=Muhasebe
+		department=Pazarlama
+		department=Satis
+		department=VeriBilimi
+		Time taken: 0.622 seconds, Fetched: 4 row(s)
+		
+4. HDFS komutları ile buckets'ları görelim 
+
+quit;
+	
+	4.1. hive warehouse azhadoop veri tabanındaki tablo dosyalarını listeleme
+	
+hdfs dfs -ls /apps/hive/warehouse/azhadoop.db
+		Found 15 items
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-19 12:50 /apps/hive/warehouse/azhadoop.db/categories
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-19 12:51 /apps/hive/warehouse/azhadoop.db/customers
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-19 12:52 /apps/hive/warehouse/azhadoop.db/departments
+		drwxr-xr-x   - maria_dev hadoop          0 2019-10-19 14:19 /apps/hive/warehouse/azhadoop.db/most_cancelled_catg
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-19 12:53 /apps/hive/warehouse/azhadoop.db/order_items
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-19 12:54 /apps/hive/warehouse/azhadoop.db/orders
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-19 12:55 /apps/hive/warehouse/azhadoop.db/products
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-22 21:31 /apps/hive/warehouse/azhadoop.db/salaries_bck
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-22 20:35 /apps/hive/warehouse/azhadoop.db/salaries_prt
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-22 19:58 /apps/hive/warehouse/azhadoop.db/salaries_temp
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-22 19:26 /apps/hive/warehouse/azhadoop.db/simple_data
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-22 19:32 /apps/hive/warehouse/azhadoop.db/simple_data2
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-22 19:44 /apps/hive/warehouse/azhadoop.db/social_media
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-22 19:18 /apps/hive/warehouse/azhadoop.db/table1
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-22 18:58 /apps/hive/warehouse/azhadoop.db/table2
+
+	4.2. salaries_bck tablosuna ait partition dizinlerini listeleme 
+	
+hdfs dfs -ls /apps/hive/warehouse/azhadoop.db/salaries_bck
+		Found 4 items
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-22 21:31 /apps/hive/warehouse/azhadoop.db/salaries_bck/department=Muhasebe
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-22 21:31 /apps/hive/warehouse/azhadoop.db/salaries_bck/department=Pazarlama
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-22 21:31 /apps/hive/warehouse/azhadoop.db/salaries_bck/department=Satis
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-22 21:31 /apps/hive/warehouse/azhadoop.db/salaries_bck/department=VeriBilimi
+
+
+	4.3. salaries_bck tablosu Pazarlama departmanına ait buckets listeleme 
+	
+hdfs dfs -ls /apps/hive/warehouse/azhadoop.db/salaries_bck/department=Pazarlama
+		Found 4 items
+		-rwxrwxrwx   1 maria_dev hadoop       2834 2019-10-22 21:30 /apps/hive/warehouse/azhadoop.db/salaries_bck/department=Pazarlama/000000_0
+		-rwxrwxrwx   1 maria_dev hadoop          0 2019-10-22 21:31 /apps/hive/warehouse/azhadoop.db/salaries_bck/department=Pazarlama/000001_0
+		-rwxrwxrwx   1 maria_dev hadoop          0 2019-10-22 21:31 /apps/hive/warehouse/azhadoop.db/salaries_bck/department=Pazarlama/000002_0
+		-rwxrwxrwx   1 maria_dev hadoop          0 2019-10-22 21:31 /apps/hive/warehouse/azhadoop.db/salaries_bck/department=Pazarlama/000003_0
+
+		yukarıda görüldüğü gibi dört bucket 
+		
+		
+========================================================================
+							TABLE SAMPLING 
+========================================================================
+
+5. bir tablonun % 2 sini seçmek
+
+
+select * from salaries_temp tablesample(2 percent);
+		OK
+		10      Muhasebe        Edouard 2384.0
+		40      InsanKaynaklari Teddy   3747.0
+		10      Muhasebe        Paloma  3833.0
+		40      InsanKaynaklari Ana     3603.0
+		20      Satis   Claudette       2084.0
+		40      InsanKaynaklari Naoko   2698.0
+		10      Muhasebe        Bill    2582.0
+		10      Muhasebe        Miwa    2002.0
+		10      Muhasebe        Claudette       3836.0
+		10      Muhasebe        Gordon  3906.0
+		20      Satis   Juan    2627.0
+
+
+select count(*) from salaries_temp;
+
+	604
+
+
+	604 sütunun %2'si yaklışık 11 adet seçti.
+
+6. 10 satır seçmek 
+
+select * from salaries_temp tablesample(10 rows);
+		OK
+		10      Muhasebe        Edouard 2384.0
+		40      InsanKaynaklari Teddy   3747.0
+		10      Muhasebe        Paloma  3833.0
+		40      InsanKaynaklari Ana     3603.0
+		20      Satis   Claudette       2084.0
+		40      InsanKaynaklari Naoko   2698.0
+		10      Muhasebe        Bill    2582.0
+		10      Muhasebe        Miwa    2002.0
+		10      Muhasebe        Claudette       3836.0
+		10      Muhasebe        Gordon  3906.0
+		Time taken: 0.138 seconds, Fetched: 10 row(s)
+
+
+
+
+========================================================================
+							no_drop
+========================================================================
+
+
+7. Hive tablosunu yanlışlıkla silmeye karşı koruyabilir miyiz? no_drop
+
+
+alter table salaries_temp enable no_drop;
+		OK
+		Time taken: 0.381 seconds
+		
+drop table salaries_temp;
+		FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Table salaries_temp is protected from being dropped
+		
+alter table salaries_temp disable no_drop;
+		OK
+		Time taken: 0.405 seconds
+
+
+8. Partitioned tablolarda bunu belli bir partition'a uygulamak da mümkün.
+
+alter table salaries_prt partition(department='VeriBilimi') enable no_drop;
+		OK
+		Time taken: 0.743 seconds
+		
+alter table salaries_prt partition(department='VeriBilimi') disable no_drop;
+		OK
+		Time taken: 0.753 seconds
+
+
+
+8. Bir tabloyu sorgulamaya kapatmak istediğimizde offline özelliğini kullanabiliriz.
+
+alter table salaries_temp enable offline;
+		OK
+		Time taken: 0.389 seconds
+
+select * from salaries_temp limit 3;
+		FAILED: SemanticException [Error 10113]: Query against an offline table or partition Table salaries_temp
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

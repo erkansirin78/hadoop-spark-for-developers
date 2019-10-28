@@ -6,12 +6,12 @@
 	
 	Yöntem-1:
 	---------
-	hive
+hive
 	
 	
 	Yöntem-2
 	-----------
-	beeline -u jdbc:hive2://localhost:10000
+beeline -u jdbc:hive2://localhost:10000
 	
 2. Veri tabanlarını listeleme
 
@@ -62,16 +62,17 @@ describe database extended azhadoop;
 ========================================================================
 
 8. Internel ve external table olmak üzere iki farklı tablo vardır. 
-Farkları metedata'larının nasıl tutulduğuna göre değişir. 
+		Farkları metedata'larının nasıl tutulduğuna göre değişir. 
 
-Internal table için hem metadata hem gerçek data hive tarafından tutulurken external table da sadece metadata hive tarafından tutulur.
- Eğer bir internal table drop edilirse hem metadata hem data ikisi de silinir.
- Şayet external table drop edilirse sadece metadata silinir veri hdfs'de kalır.
- 
- arsayılan olarak hive internal table yaratır.
+		Internal table için hem metadata hem gerçek data hive tarafından yönetilir ve saklanırken external table da sadece metadata 
+		hive tarafından tutulur.
+		Eğer bir internal table drop edilirse hem metadata hem data ikisi de silinir.
+		Şayet external table drop edilirse sadece metadata silinir veri hdfs'de kalır.
+		 
+		Varsayılan olarak hive internal table yaratır.
  
 9. Tablo işlemlerini hangi veritabanında yapacak isek seçmeliyiz.
- use azhadoop;
+use azhadoop;
 		OK
 		Time taken: 0.227 seconds
 
@@ -82,10 +83,11 @@ create table if not exists table1 (col1 string, col2 array<string>, col3 string,
 		Time taken: 1.068 seconds
 
 
-	10.1.
-	fields terminated by ',': sütunlar "," ile ayrılmış
-	collection items terminated by ':': sütunlardan biri array içeriyor ise array elemenları ':' ile ayrılmıştır.
-	lines terminated by '\n': her yeni satır başı yeni bir satırdır.
+	10.1. Komut açıklama:
+	row format	delimited				: satır formatı; belli karakterlerle sütunlar sınırlandırılmıştır.
+	fields terminated by ','			: sütunlar "," ile ayrılmış demektir.
+	collection items terminated by ':'	: sütunlardan biri array içeriyor ise array elemenları ':' ile ayrılmıştır.
+	lines terminated by '\n'			: her yeni satır başı yeni bir satırdır.
 
 	10.2.
 	row format delimited fields terminated by ',' collection items terminated by ':' lines terminated by '\n'  stored as textfile;
@@ -99,7 +101,7 @@ create table if not exists table2 (col1 string, col2 array<string>, col3 string,
 		Time taken: 0.636 seconds
 
 
-12. Hive tablolarının HDFS adresleri vardır. Varsayılan internaş tablo dizinleri 
+12. Hive tablolarının HDFS adresleri vardır. Varsayılan internal tablo dizinleri 
 	/user/hive/warehouse dizinidir.
 
 	Farklı bir dizin kullanmak için bunu tablo oluştururken belirtiriz.
@@ -143,16 +145,38 @@ create table if not exists table3 (col1 string, col2 array<string>, col3 string,
 
 		FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.MoveTask
 
-		Bu hatanın sebebi maria_dev kullanıcısının bu dosyaya sahip olmaması
+		Bu hatanın sebebi maria_dev kullanıcısının bu dosyaya sahip olmaması ve hadoop kullanıcı grubunda bulunmaması.
+		
+		Ancak her ne kadar hata da alsa verinin yüklendiğini görüyoruz.
 
+select * from table1 limit 3;
+		OK
+		499     ["Poole","GBR"] England 141000
+		501     ["Blackburn","GBR"]     England 140000
+		500     ["Bolton","GBR"]        England 139020
+		Time taken: 0.332 seconds, Fetched: 3 row(s)
+
+	/user/admin diznini kontrol ettiğimizde ise dosyanın yerinde olmadığını göreceğiz. Çünkü hive tablosu yaratıldığı ve tablo internal olduğu için
+	veri varsayılan dizin olan /apps/hive/warehouse'a gitti
+	
+	
 	13.3. Aynı dosyayı hdfs /user/maria_dev dizinine de yükleyelim.
 	
 	13.4. admin kullanıcısı ile upload ettiğimiz için yine sahiplik admin olacaktır. Komut satırından bunu değiştirelim.
-	
+	hive shell'den 
+quit; 
+	ile çıkalım.
 sudo -u hdfs hdfs dfs -chown maria_dev:hdfs /user/maria_dev/table1.txt
 	şimdi sahiplik değişti.
 	
-	13.5. 
+	hive shell'e bağlanalım.
+	
+hive
+
+	veri tabanı seçelim
+use azhadoop;
+
+	13.5. Tekrar yükleyelim
 load data inpath '/user/maria_dev/table1.txt' into table table1;
 
 		Loading data to table azhadoop.table1
@@ -172,18 +196,31 @@ load data inpath '/user/maria_dev/table1.txt' into table table1;
 				at org.apache.hadoop.ipc.Server$Handler.run(Server.java:2347)
 
 		FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.MoveTask
+		
+		Hata yine aldı çünkü sahiplik değiştirdik ancak grup hadoop yapmadık. Hata almasına rağmen veri tabloya yüklendi.
+		
 			
 	13.6. Bu hatayı düzeltmek için önce tabloyu truncate edelim.
+truncate table table1;
 	
-	truncate table table1;
+		Hive shell çıkış:
+quit;
+		daha sonra /user/maria_dev dizinine table1.txt dosyasını yükleyelim.
 	
-	daha sonra /user/maria_dev dizinine table1.txt dosyasını yükleyelim.
-	
-	yine admin ownership ile yükleyecektir. Onu maria_dev:hadoop yapalım.
-	
- sudo -u hdfs hdfs dfs -chown maria_dev:hadoop /user/maria_dev/table1.txt
+		yine admin ownership ile yükleyecektir. Onu maria_dev:hadoop yapalım.
 
-	Bu sefer hata almadan başarıtla yükledi.
+sudo -u hdfs hdfs dfs -chown maria_dev:hadoop /user/maria_dev/table1.txt
+
+		Bu sefer hata almadan başarıtla yükledi.
+		hive shell'e tekrar bağlanalım.
+hive
+use azhadoop;
+
+load data inpath '/user/maria_dev/table1.txt' into table table1;
+	Loading data to table azhadoop.table1
+	Table azhadoop.table1 stats: [numFiles=1, numRows=0, totalSize=185, rawDataSize=0]
+	OK
+	Time taken: 1.541 seconds
 
 
 	13.7. kontrol
@@ -199,7 +236,7 @@ select * from table1;
 		Time taken: 0.524 seconds, Fetched: 6 row(s)
 
 
-
+quit;
 
 
 

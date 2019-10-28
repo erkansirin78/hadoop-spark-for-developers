@@ -1,0 +1,236 @@
+========================================================================
+							JOIN 
+========================================================================
+1. Hazırlık
+
+	1.1. maria_dev kullanıcısı ile veri setlerini /home/maria_dev diznine indirme
+wget https://raw.githubusercontent.com/erkansirin78/hadoop-big-data/master/04-Buyuk-Veri-Sorgulama/01_hive/data/join/customers
+wget https://raw.githubusercontent.com/erkansirin78/hadoop-big-data/master/04-Buyuk-Veri-Sorgulama/01_hive/data/join/orders
+	
+	1.2. maria_dev kullanıcısı ile hive shell bağlantı
+
+hive
+
+	1.2. join uygulaması veri tabanı oluşturma
+	
+create database if not exists joindb;
+use joindb;
+
+	1.3. Çalışma için gerekli tabloları oluşturma 
+	
+create table if not exists orders (customer_id int, first_name string, last_name string, email string, address string, city string, state string, zipcode string) row format delimited fields terminated by '\t' lines terminated by '\n'  stored as textfile tblproperties('skip.header.line.count'='1');
+create table if not exists customers (order_id int, order_date string, amount string, customer_id int) row format delimited fields terminated by '\t' lines terminated by '\n'  stored as textfile tblproperties('skip.header.line.count'='1');
+
+	1.4. /home/maria_dev diznindeki veri dosyalarını tablolara yazma
+	
+load data local inpath'/home/maria_dev/customers' into table customers;
+load data local inpath'/home/maria_dev/orders' into table orders;
+
+	1.5. Yüklenen veri kontrol
+
+SELECT * from joindb.orders;
+
+		/*
+		customer_id|first_name|last_name |email              |address                  |city           |state|zipcode|
+		-----------|----------|----------|-------------------|-------------------------|---------------|-----|-------|
+				  1|George    |Washington|gwashington@usa.gov|3200 Mt Vernon Hwy       |Mount Vernon   |VA   |22121  |
+				  2|John      |Adams     |jadams@usa.gov     |1250 Hancock St          |Quincy         |MA   |02169  |
+				  3|Thomas    |Jefferson |tjefferson@usa.gov |931 Thomas Jefferson Pkwy|Charlottesville|VA   |22902  |
+				  4|James     |Madison   |jmadison@usa.gov   |11350 Constitution Hwy   |Orange         |VA   |22960  |
+				  5|James     |Monroe    |jmonroe@usa.gov    |2050 James Monroe Parkway|Charlottesville|VA   |22902  |
+		*/
+
+SELECT * from joindb.customers;
+		/*
+		order_id|order_date|amount |customer_id|
+		--------|----------|-------|-----------|
+			   1|07/04/1776|$234.56|          1|
+			   2|03/14/1760|$78.50 |          3|
+			   3|05/23/1784|$124.00|          2|
+			   4|09/03/1790|$65.50 |          3|
+			   5|07/21/1795|$25.50 |         10|
+			   6|11/27/1787|$14.40 |          9|
+
+		*/
+
+		
+		
+2. JOIN
+
+use joindb;
+
+
+-- INNER JOIN
+select * from joindb.orders o join joindb.customers c 
+on o.customer_id = c.customer_id
+		/*
+		customer_id|first_name|last_name |email              |address                  |city           |state|zipcode|order_id|order_date|amount |customer_id|
+		-----------|----------|----------|-------------------|-------------------------|---------------|-----|-------|--------|----------|-------|-----------|
+				  1|George    |Washington|gwashington@usa.gov|3200 Mt Vernon Hwy       |Mount Vernon   |VA   |22121  |       1|07/04/1776|$234.56|          1|
+				  2|John      |Adams     |jadams@usa.gov     |1250 Hancock St          |Quincy         |MA   |02169  |       3|05/23/1784|$124.00|          2|
+				  3|Thomas    |Jefferson |tjefferson@usa.gov |931 Thomas Jefferson Pkwy|Charlottesville|VA   |22902  |       2|03/14/1760|$78.50 |          3|
+				  3|Thomas    |Jefferson |tjefferson@usa.gov |931 Thomas Jefferson Pkwy|Charlottesville|VA   |22902  |       4|09/03/1790|$65.50 |          3|
+		*/
+
+-- LEFT JOIN
+select * from joindb.orders o left join joindb.customers c 
+on o.customer_id = c.customer_id
+		/*
+		 * customers tablosunda olup da siparişi olmayan müşterilerin bilgisi boş kaldı (9 ve 10 numaralı müşteri)
+		 * 
+		customer_id|first_name|last_name |email              |address                  |city           |state|zipcode|order_id|order_date|amount |customer_id|
+		-----------|----------|----------|-------------------|-------------------------|---------------|-----|-------|--------|----------|-------|-----------|
+				  1|George    |Washington|gwashington@usa.gov|3200 Mt Vernon Hwy       |Mount Vernon   |VA   |22121  |       1|07/04/1776|$234.56|          1|
+				  2|John      |Adams     |jadams@usa.gov     |1250 Hancock St          |Quincy         |MA   |02169  |       3|05/23/1784|$124.00|          2|
+				  3|Thomas    |Jefferson |tjefferson@usa.gov |931 Thomas Jefferson Pkwy|Charlottesville|VA   |22902  |       2|03/14/1760|$78.50 |          3|
+				  3|Thomas    |Jefferson |tjefferson@usa.gov |931 Thomas Jefferson Pkwy|Charlottesville|VA   |22902  |       4|09/03/1790|$65.50 |          3|
+				  4|James     |Madison   |jmadison@usa.gov   |11350 Constitution Hwy   |Orange         |VA   |22960  |        |          |       |           |
+				  5|James     |Monroe    |jmonroe@usa.gov    |2050 James Monroe Parkway|Charlottesville|VA   |22902  |        |          |       |           |
+		 */
+
+-- RIGHT JOIN
+select * from joindb.orders o right join joindb.customers c 
+on o.customer_id = c.customer_id
+
+		/*
+		 * Bu sefer tersi oldu 
+		 
+		customer_id|first_name|last_name |email              |address                  |city           |state|zipcode|order_id|order_date|amount |customer_id|
+		-----------|----------|----------|-------------------|-------------------------|---------------|-----|-------|--------|----------|-------|-----------|
+				  1|George    |Washington|gwashington@usa.gov|3200 Mt Vernon Hwy       |Mount Vernon   |VA   |22121  |       1|07/04/1776|$234.56|          1|
+				  3|Thomas    |Jefferson |tjefferson@usa.gov |931 Thomas Jefferson Pkwy|Charlottesville|VA   |22902  |       2|03/14/1760|$78.50 |          3|
+				  2|John      |Adams     |jadams@usa.gov     |1250 Hancock St          |Quincy         |MA   |02169  |       3|05/23/1784|$124.00|          2|
+				  3|Thomas    |Jefferson |tjefferson@usa.gov |931 Thomas Jefferson Pkwy|Charlottesville|VA   |22902  |       4|09/03/1790|$65.50 |          3|
+				   |          |          |                   |                         |               |     |       |       5|07/21/1795|$25.50 |         10|
+				   |          |          |                   |                         |               |     |       |       6|11/27/1787|$14.40 |          9|
+		 */
+
+-- OUTER JOIN
+select * from joindb.orders o full outer join joindb.customers c 
+on o.customer_id = c.customer_id
+
+		/*
+		customer_id|first_name|last_name |email              |address                  |city           |state|zipcode|order_id|order_date|amount |customer_id|
+		-----------|----------|----------|-------------------|-------------------------|---------------|-----|-------|--------|----------|-------|-----------|
+				  1|George    |Washington|gwashington@usa.gov|3200 Mt Vernon Hwy       |Mount Vernon   |VA   |22121  |       1|07/04/1776|$234.56|          1|
+				  2|John      |Adams     |jadams@usa.gov     |1250 Hancock St          |Quincy         |MA   |02169  |       3|05/23/1784|$124.00|          2|
+				  3|Thomas    |Jefferson |tjefferson@usa.gov |931 Thomas Jefferson Pkwy|Charlottesville|VA   |22902  |       4|09/03/1790|$65.50 |          3|
+				  3|Thomas    |Jefferson |tjefferson@usa.gov |931 Thomas Jefferson Pkwy|Charlottesville|VA   |22902  |       2|03/14/1760|$78.50 |          3|
+				  4|James     |Madison   |jmadison@usa.gov   |11350 Constitution Hwy   |Orange         |VA   |22960  |        |          |       |           |
+				  5|James     |Monroe    |jmonroe@usa.gov    |2050 James Monroe Parkway|Charlottesville|VA   |22902  |        |          |       |           |
+				   |          |          |                   |                         |               |     |       |       6|11/27/1787|$14.40 |          9|
+				   |          |          |                   |                         |               |     |       |       5|07/21/1795|$25.50 |         10|
+		*/
+
+
+
+
+3. Memory Management & Optimization of Joins
+
+	Aynı anda bir çok tabloyu birleştirmeye çalışmak performansı olumsuz etkileyebilir.
+	Varsayılan olarak baştaki tablolar belleğe çekilir, en sondaki tablo ise stream olarak kullanılır ve koşullara uyan eşleşme yapılır.
+	"last table is streamed, rest are buffered"
+	Bu bilgi ışığında hareket ederek daha performanslı tablo birleştirmeleri yapabiliriz.
+	Örneğin çok büyük tabloları belleğe tampon yapmak sıkıntı olabilir. 
+	Hangi tablo stream olacak ise sorguda onu açıkca belirtebiliriz.
+
+		orders tablosunu streamtable yapalım
+select /*+ STREAMTABLE (o)*/ * from joindb.orders o join joindb.customers c 
+on o.customer_id = c.customer_id	
+
+
+
+4. Map Joins
+	map reduce operasyonlarında reduce daha maliyetli bir operasyondur.
+	tablolar belleğe sığacak gibiyse sadece map ile join yapılabilir. En az bir tablo sığacak kadar küçük olabilir.
+	
+	4.1. manuel olarak mapjoin tablo adını belirtmek
+	
+-- MAP JOIN
+select /*+ MAPJOIN (c)*/ * from joindb.orders o join joindb.customers c 
+on o.customer_id = c.customer_id
+
+		Query ID = maria_dev_20191023143435_36e8c71d-4daa-4d62-a885-5fc04f841797
+		Total jobs = 1
+		Execution log at: /tmp/maria_dev/maria_dev_20191023143435_36e8c71d-4daa-4d62-a885-5fc04f841797.log
+		2019-10-23 14:34:38     Starting to launch local task to process map join;      maximum memory = 1046478848
+		2019-10-23 14:34:39     Dump the side-table for tag: 1 with group count: 5 into file: file:/tmp/maria_dev/b3e2c163-f292-4a10-b841-3ef26bd39273/hive_2019-10-23_14-34-35_346_2552842950876512266-1/-local-10003/HashTable-Stage-3/MapJoin-mapfile11--.hashtable
+		2019-10-23 14:34:39     Uploaded 1 File to: file:/tmp/maria_dev/b3e2c163-f292-4a10-b841-3ef26bd39273/hive_2019-10-23_14-34-35_346_2552842950876512266-1/-local-10003/HashTable-Stage-3/MapJoin-mapfile11--.hashtable (476 bytes)
+		2019-10-23 14:34:39     End of local task; Time Taken: 1.061 sec.
+		Execution completed successfully
+		MapredLocal task succeeded
+		Launching Job 1 out of 1
+		Number of reduce tasks is set to 0 since there's no reduce operator
+		Starting Job = job_1571819914300_0011, Tracking URL = http://sandbox-hdp.hortonworks.com:8088/proxy/application_1571819914300_0011/
+		Kill Command = /usr/hdp/2.6.5.0-292/hadoop/bin/hadoop job  -kill job_1571819914300_0011
+		Hadoop job information for Stage-3: number of mappers: 1; number of reducers: 0
+		2019-10-23 14:34:46,848 Stage-3 map = 0%,  reduce = 0%
+		2019-10-23 14:34:53,264 Stage-3 map = 100%,  reduce = 0%, Cumulative CPU 2.74 sec
+		MapReduce Total cumulative CPU time: 2 seconds 740 msec
+		Ended Job = job_1571819914300_0011
+		MapReduce Jobs Launched:
+		Stage-Stage-3: Map: 1   Cumulative CPU: 2.74 sec   HDFS Read: 9938 HDFS Write: 409 SUCCESS
+		Total MapReduce CPU Time Spent: 2 seconds 740 msec
+
+	customer siperişlere göre daha küçük olacağından küçüğü mapjoin dedik. Yukarıdaki sorgu logundan reducer kullanılmadığına dikkat ediniz.
+	
+	
+	4.2. otomatik yöntem
+	Yukarıda bu işi elle yaptık ancak hive'a da bu işi bırakabiliriz.
+set hive.auto.convert.join = true;
+set hive.mapjoin.smalltable.filesize;
+		set                                      |
+		-----------------------------------------|
+		hive.mapjoin.smalltable.filesize=25000000|
+		
+		varsayılan değer 25 MB.
+
+	Şu ayarlara göre hive artık otomatik olarak 25 MB'den küçük tabloyu mapjoin olarak kullanacaktır.
+	
+	Ancak bu modu full outer join için kullanamayız.
+	
+	
+	4.3. Bucketed mapjoin 
+	Bunun için her iki tablo da eşit miktarda bucket'a sahip olmalıdır. Her iki tablo da
+	bucket edilen sütun üzerinden birleşmelidir.
+
+set hive.input.format = org.apache.hadoop.ql.io.BucketizedHiveInputFormat;
+set hive.optimize.bucketmapjoin=true;
+set hive.auto.convert.sortmerge.join=true;
+set hive.optimize.bucketmapjoin.sortedmerge=true;
+	
+
+
+
+========================================================================
+							VIEWS 
+========================================================================
+
+5. 
+	view veri tutmaz.
+	Tüm DML geçerli
+	read-only
+
+6. View oluşturma 
+
+create view vw_customers as select * from joindb.customers;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

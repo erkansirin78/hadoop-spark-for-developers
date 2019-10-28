@@ -4,12 +4,35 @@
 2. Sorgular esnasında YARN Resource Manager arayüzündeki değişiklikler gözlemlenir.
 
 3. Hive veri tabanı yaratma
+hive 
+komutu ike hive shell'e bağlanılır.
 
-	3.1. CREATE DATABASE azhadoop;
+	3.1. 
+CREATE DATABASE IF NOT EXISTS azhadoop;
 	
-	3.2. SHOW DATABASES;
+	3.2. veri tabanlarını listeleme
+show databases;
+	OK
+	azhadoop
+	default
+	foodmart
+
 	
-	ile yeni yaratılan azhadoop veri tabanı listede görülür.
+	3.3. veri tabanı seçme
+use azhadoop;
+
+	3.4. seçilen veri tabanında tabloları listeleme 
+show tables;
+		OK
+		categories
+		customers
+		departments
+		most_cancelled_catg
+		order_items
+		orders
+		products
+		Time taken: 0.298 seconds, Fetched: 7 row(s)
+
 	
 4. DBeaver Hive Bağlantısı ve Hive üzerinde sorgu çalıştırma
 
@@ -34,7 +57,7 @@ beeline -u jdbc:hive2://localhost:10000
 Sorgu dan önce 
  jdbc:hive2://localhost:10000> set tez.queue.name=hive;
 
- Bunu mapreduce için yapamayız. Runtime esnasında mümkün değil.
+ Bunu mapreduce için yapamayız. Runtime esnasında mümkün değil. Bu ayarın açılması gerekir.
 
 8. Sorgu:
 0: jdbc:hive2://localhost:10000>  select workclass, COUNT(*) FROM `default`.adult_preprocessed GROUP by workclass;
@@ -67,21 +90,42 @@ select workclass, COUNT(*) FROM `default`.adult_preprocessed GROUP by workclass;
 
 
 
+
 11.
 
 Mysq veri tabanına bağlama:
 =====================================================
 HDP 2.6.5 Kullananlar:
 mysql -u root -p 
-Hortonworks1
-
-
+hortonworks1
 
 HDP 2.6.4 kullananlar doğrudan
 mysql -u root -p 
 hadoop
 
 
-Mysql root password sıfırlama
---------------------------------
-https://www.veribilimiokulu.com/pratik-bilgiler-pratik-komutlar-3/#bolum-3
+
+mysql root şifresini sıfırlamak
+
+root kullanıcısı ile:
+---------------------
+
+systemctl stop mysqld
+systemctl set-environment MYSQLD_OPTS="--skip-grant-tables --skip-networking"
+systemctl start mysqld
+mysql -u root
+
+mysql shell içinde sırasıyla
+-------------------------------
+
+use mysql;
+update user set authentication_string=PASSWORD("hadoop") where User='root';
+flush privileges;
+quit
+
+
+Bu işlem sonrasında tüm servisleri ve sanal makineyi yeniden başlatmak gerekebilir.
+
+
+
+

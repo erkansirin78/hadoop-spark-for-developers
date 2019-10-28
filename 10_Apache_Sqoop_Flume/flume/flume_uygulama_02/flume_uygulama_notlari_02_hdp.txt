@@ -1,0 +1,184 @@
+==================================================================
+			1. UYGULAMA İÇİN YAPAY LOG ÜRETME
+=================================================================
+
+1. maria_dev kullanıcısı ile bağlantı kurulur.
+
+2. Uygulama için dizin oluştur ve içine gir.
+
+mkdir flume_uygulama_02
+cd flume_uygulama_02/
+
+3. Bir sunucu log ürütimini simüle etmek için küçük bir script indireceğiz.
+	
+wget https://www.veribilimiokulu.com/data/gen_logs-master.zip
+
+	İndirdiğimiz zip dosyasını açalım
+	
+unzip gen_logs-master.zip
+
+	zip uzantılı dosyaya artık ihtiyacım yok kalabalık etmesin kaldıralım
+	
+rm -rf gen_logs-master.zip
+
+	Şuan buradayım
+	
+pwd
+	/home/maria_dev/flume_uygulama_02
+
+	dizinde şunlar var 
+	
+ll
+	total 4
+	drwxrwxr-x 5 maria_dev maria_dev 4096 Sep 19  2018 gen_logs-master
+	
+	Bu dosyayı ismini değiştirerek /opt diznine taşıyalım
+	
+sudo mv gen_logs-master /opt/gen_logs
+	
+	Kontrol edelim
+
+ls -l /opt
+		total 600792
+		drwxr-xr-x 3 root      root           4096 Jun 18  2018 ambari_infra_solr
+		drwxrwxr-x 5 maria_dev maria_dev      4096 Sep 19  2018 gen_logs
+		lrwxrwxrwx 1 root      root             19 Oct 25 19:11 presto -> presto-server-0.227
+		drwxr-xr-x 6 root      root           4096 Oct 25 19:13 presto-server-0.227
+		-rw-r--r-- 1 root      root      615188880 Oct 17 00:21 presto-server-0.227.tar.gz
+		-rwxr-xr-x 1 root      root            261 Jun 18  2018 router.php
+
+			
+	Evet taşıma işlemi tamamdır.
+	
+4. 
+	4.1. vi editör ile .bash_profile içine kalıcı olarak ekleyelim
+
+vi ~/.bash_profile
+	dosyasına 
+	
+PATH=$PATH:/opt/gen_logs
+
+	satırını ekliyoruz
+dosyanın hali aşağıdaki gibidir.
+		# .bash_profile
+
+		# Get the aliases and functions
+		if [ -f ~/.bashrc ]; then
+				. ~/.bashrc
+		fi
+
+		# User specific environment and startup programs
+
+		PATH=$PATH:$HOME/.local/bin:$HOME/bin
+		PATH=$PATH:/opt/gen_logs
+		export PATH
+
+4.2. ayarları geçerli hale getirmek için 
+source ~/.bash_profile
+
+
+4.3. Artık log jeneratörünü çalıştırabiliriz.
+	
+start_logs.sh
+
+
+4.4. Çalışma kontrolü yapalım
+ls -ltr /opt/gen_logs/logs
+	total 12
+	-rw-rw-r-- 1 maria_dev maria_dev 10759 Oct 25 21:24 access.log
+	[maria_dev@sandbox-hdp flume_uygulama_02]$ ls -ltr /opt/gen_logs/logs
+	total 12
+	-rw-rw-r-- 1 maria_dev maria_dev 11404 Oct 25 21:24 access.log
+	[maria_dev@sandbox-hdp flume_uygulama_02]$ ls -ltr /opt/gen_logs/logs
+	total 12
+	-rw-rw-r-- 1 maria_dev maria_dev 11813 Oct 25 21:24 access.log
+
+	Komut her çalıştığında log dosyasının arttığını göreceksiniz.
+	
+4.5. Log üretimine tail ile bir bakalım
+
+tail -F /opt/gen_logs/logs/access.log
+
+	inceledikten sonra 
+Ctrl+C ile çıkabiliriz.
+	
+	Aynı işi log jeneratörü uygulamasına ait 
+	
+tail_logs.sh
+
+	komutu ile de yapabiliriz. 
+
+Ctrl+C ile çıkabiliriz.
+
+4.6. jeneratörü durduralım.
+
+stop_logs.sh
+
+	
+==================================================================
+			2. FLUME AJANI OLUŞTURMA
+=================================================================
+
+5. Ben neredeyim şuan?
+
+pwd
+		/home/maria_dev/flume_uygulama_02
+
+6. Flume agent konfigürasyon dosyası oluşturma
+
+vi example.conf
+
+	Flume user guide üzerindeki örneği içine yapıştıralım
+	
+	
+	
+	
+# example.conf: A single-node Flume configuration
+
+# Name the components on this agent
+a1.sources = r1
+a1.sinks = k1
+a1.channels = c1
+
+# Describe/configure the source
+a1.sources.r1.type = netcat
+a1.sources.r1.bind = 0.0.0.0
+a1.sources.r1.port = 9999
+
+# Describe the sink
+a1.sinks.k1.type = logger
+
+# Use a channel which buffers events in memory
+a1.channels.c1.type = memory
+a1.channels.c1.capacity = 1000
+a1.channels.c1.transactionCapacity = 100
+
+# Bind the source and sink to the channel
+a1.sources.r1.channels = c1
+a1.sinks.k1.channel = c1
+
+
+
+
+esc + :wq 
+	ile çıkalım
+	
+7. Flume agent çalıştırma
+flume-ng agent --name a1 --conf-file /home/maria_dev/flume_uygulama_02/example.conf
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,105 @@
+1. cloudera kullanıcısı ile bağlantı kurulur.
+
+ssh cloudera@quickstart -p 2222
+		The authenticity of host '[quickstart]:2222 ([127.0.0.1]:2222)' can't be established.
+		RSA key fingerprint is SHA256:fdH27UfSaJJHDPkbA95WRrOotvbMw825e88H/9Y+4VY.
+		Are you sure you want to continue connecting (yes/no)? yes
+		Warning: Permanently added '[quickstart]:2222' (RSA) to the list of known hosts.
+		cloudera@quickstart's password: cloudera
+		Last login: Mon Oct 14 12:29:03 2019 from 10.0.2.2
+
+
+2. Uygulama için dizin oluştur ve içine gir.
+
+mkdir flume_uygulama
+cd flume_uygulama/
+
+3. Bir sunucu log ürütimini simüle etmek için küçük bir script indireceğiz.
+	
+wget https://www.veribilimiokulu.com/data/gen_logs-master.zip
+
+	İndirdiğimiz zip dosyasını açalım
+	
+unzip gen_logs-master.zip
+
+	zip uzantılı dosyaya artık ihtiyacım yok kalabalık etmesin kaldıralım
+	
+rm -rf gen_logs-master.zip
+
+	Şuan buradayım
+	
+pwd
+	/home/cloudera/flume_uygulama
+
+	dizinde şunlar var 
+	
+ll
+	total 4
+	drwxrwxr-x 5 cloudera cloudera 4096 Sep 19  2018 gen_logs-master
+	
+	Bu dosyayı /opt diznine taşıyalım
+	
+sudo mv gen_logs-master /opt
+	
+	Kontrol edelim
+
+ll /opt
+			total 20
+			drwxr-xr-x  6 cloudera-scm cloudera-scm 4096 Oct 14 11:09 cloudera
+			drwxr-xr-x  4 cloudera     cloudera     4096 Aug 27  2014 examples
+			drwxrwxr-x  5 cloudera     cloudera     4096 Sep 19  2018 gen_logs-master
+			drwxr-xr-x. 2 root         root         4096 Mar 26  2015 rh
+			drwxr-xr-x  9 root         root         4096 Oct 23  2017 VBoxGuestAdditions-5.0.14
+			
+	Evet taşıma işlemi tamamdır.
+4. gen_master scripti için .profile ve .bash_profile güncelleme
+
+export PATH=$PATH:/opt/gen_logs-master
+
+sudo vi ~/.bash_profile
+	
+		en sondaki PATH satırının bir üstüne
+PATH=$PATH:/opt/gen_logs-master
+
+	ekleyelim ve "esc -> : -> wq" tuşlarıyla vi editörden çıkalım.
+	
+	Kontrol edelim 
+cat ~/.bash_profile
+		# .bash_profile
+
+		# Get the aliases and functions
+		if [ -f ~/.bashrc ]; then
+				. ~/.bashrc
+		fi
+
+		# User specific environment and startup programs
+
+		PATH=$PATH:$HOME/bin
+		PATH=$PATH:/opt/gen_logs-master
+		export PATH
+
+	Eklemenin geçerli olması için 
+	
+ source .bash_profile
+ 
+	Artık log jeneratörünü çalıştırabiliriz.
+	
+start_logs.sh
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

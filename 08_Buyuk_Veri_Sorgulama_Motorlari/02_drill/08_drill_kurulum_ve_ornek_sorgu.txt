@@ -34,7 +34,7 @@ cd apache-drill-1.12
 sandbox-hdp.hortonworks.com:8086 ile drill arayüzüne ulaşalım
 
 6. Storage'a tıklayalım ,	
-	6.1. Hive Enable 
+	6.1. Hive Enable  butonuna tıklayalım
 		(yukarı geçecek)
 		
 	6.2. Hive plugin update
@@ -42,7 +42,8 @@ sandbox-hdp.hortonworks.com:8086 ile drill arayüzüne ulaşalım
 		değeri boş ona 
 		thrift://sandbox-hdp.hortonworks.com:9083
 		değerini girelim.
-	"fs.default.name": "hdfs://sandbox-hdp.hortonworks.com:8020/"
+		
+	6.3. "fs.default.name": "hdfs://sandbox-hdp.hortonworks.com:8020/"
 	değerini girelim 
 	
 		update'e tıklayıp çıkalım.
@@ -67,19 +68,34 @@ sandbox-hdp.hortonworks.com:8086 ile drill arayüzüne ulaşalım
 
 7. Query sekmesinden sorgu çalıştıralım
 	7.1. Drill versiyonu öğrenme
-		SELECT version FROM sys.version;
+
+SELECT version FROM sys.version;
+		1.12.0
 		
 	7.2. Örnek sorgu 
-		SELECT * FROM cp.`employee.json` LIMIT 20
+SELECT * FROM cp.`employee.json` LIMIT 20
 	
-	7.3. SHOW DATABASES;
-		veri tabanı ve tanımlanan dosya sistemleri görüntülenecektir.
+	7.3. veri tabanı ve tanımlanan dosya sistemleri listeleme.
+
+SHOW DATABASES;
+
+	INFORMATION_SCHEMA
+	cp.default
+	dfs.default
+	dfs.root
+	dfs.tmp
+	hive.azhadoop
+	hive.default
+	hive.foodmart
+	hive.joindb
+	sys
+		
 		
 	7.4. Eski sorguları Profiles sekmesinden görebiliriz.
 
 	7.5. Hive verilerini sorgulama:
 	
-		SELECT * FROM hive.default.adult_preprocessed LIMIT 10
+SELECT * FROM hive.default.adult_preprocessed LIMIT 10
 		
 		Not: Hive default şemasındaki tabloları sorgularken sorguda default kullanmıyoruz.
 
@@ -87,14 +103,14 @@ sandbox-hdp.hortonworks.com:8086 ile drill arayüzüne ulaşalım
 		
 		7.6.1. csv dosyasından:
 		
-		SELECT * FROM dfs.root.`/user/erkan/retail_db/orders.csv` LIMIT 20;
+SELECT * FROM dfs.root.`/user/erkan/retail_db/orders.csv` LIMIT 20;
 		
 		GROUP BY SORGU sorgu:
-			SELECT orderStatus, COUNT(*) AS SAYI 
-			FROM dfs.root.`/user/erkan/retail_db/orders.csv` 
-			GROUP BY orderStatus 
-			ORDER BY SAYI DESC
-			LIMIT 20;
+SELECT orderStatus, COUNT(*) AS SAYI 
+FROM dfs.root.`/user/erkan/retail_db/orders.csv` 
+GROUP BY orderStatus 
+ORDER BY SAYI DESC
+LIMIT 20;		
 		
 		
 		7.6.2. retail_db en çok satan ilk 10 kategori
@@ -108,13 +124,18 @@ LIMIT 10
 		
 		
 		7.6.3. json format sorgu:
-			https://raw.githubusercontent.com/erkansirin78/datasets/master/iris.json adresindeki dosya HDFS'e yüklendikten sonra:
-		
+			https://raw.githubusercontent.com/erkansirin78/datasets/master/iris.json 
+			
+			adresindeki dosya HDFS'e yüklenir
+wget https://raw.githubusercontent.com/erkansirin78/datasets/master/iris.json
+hdfs dfs -put iris.json /user/maria_dev 
+
+
 		7.6.3.1. Normal SELECT
-			SELECT * FROM dfs.root.`user/erkan/iris.json` LIMIT 20
+SELECT * FROM dfs.root.`user/maria_dev/iris.json` LIMIT 20
 		
 		7.6.3.2. GROUP BY 
-			SELECT Species, COUNT(*) AS SAYI FROM dfs.root.`user/erkan/iris.json` GROUP BY Species LIMIT 20
+SELECT Species, COUNT(*) AS SAYI FROM dfs.root.`user/maria_dev/iris.json` GROUP BY Species LIMIT 20
 
 8. Drill'i kapatma
 

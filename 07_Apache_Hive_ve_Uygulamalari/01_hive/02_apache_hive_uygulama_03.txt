@@ -25,7 +25,7 @@
 
 
 ========================================================================
-			HIVE INSERT
+				HIVE INSERT
 ========================================================================
 
 3. Bir tablodan başka bir tabloya insert 
@@ -43,16 +43,18 @@
 		Bunun için exit; ile hive shell'de çıkalım.
 
 		dosyayı indirelim
-		 wget https://raw.githubusercontent.com/erkansirin78/datasets/master/simple_data.csv
+wget https://raw.githubusercontent.com/erkansirin78/datasets/master/simple_data.csv
 
 		 hive shell'e tekrar girelim.
 
-		 hive
-
-		 use azhadoop;
+hive
+use azhadoop;
 
 	3.3. Tablo yaratma
-create table if not exists simple_data (sirano int, isim string, yas int, meslek string, sehir string, aylik_gelir float) row format delimited fields terminated by ',' tblproperties('skip.header.line.count'='1'); 
+create table if not exists simple_data (sirano int, isim string, yas int, meslek string, sehir string, aylik_gelir float) row format delimited fields terminated by ',' lines terminated by '\n' stored as textfile tblproperties('skip.header.line.count'='1');
+		OK
+		Time taken: 0.945 seconds
+
 
 
 	3.4. Tabloya lokal dizinde bulunan (/home/maria_dev/simple_data.csv) csv dosyasından veri yüklemek
@@ -66,26 +68,13 @@ load data local inpath '/home/maria_dev/simple_data.csv' overwrite into table si
 
 
 	3.5. select sorgusu ile kontrol edelim:
-select * from simple_data;
+select * from simple_data limit 3;
 		OK
 		1       Cemal   35      Isci    Ankara  3500.0
 		2       Ceyda   42      Memur   Kayseri 4200.0
 		3       Timur   30      Müzisyen        Istanbul        9000.0
-		4       Burcu   29      Pazarlamaci     Ankara  4200.0
-		5       Yasemin 23              Bursa   4800.0
-		6       Ali     33      Memur   Ankara  4250.0
-		7       Dilek   29      Pazarlamaci     Istanbul        7300.0
-		8       Murat   31      Müzisyen        Istanbul        12000.0
-		9       Ahmet   33      Doktor  Ankara  18000.0
-		10      Muhittin        46      Berber  Istanbul        12000.0
-		11      Hicaziye        47      Tuhafiyeci      Ankara  4800.0
-		12      Harun   43      Tornacı Ankara  4200.0
-		13      Hakkı   33      Memur   Çorum   3750.0
-		14      Gülizar 37      Doktor  İzmir   14250.0
-		15      Şehmuz  41              Ankara  8700.0
-		16      Gençay  46      Berber  Ankara  8800.0
-		16      Gençay  46      Berber  Ankara  8800.0
-		Time taken: 0.157 seconds, Fetched: 17 row(s)
+		Time taken: 0.58 seconds, Fetched: 3 row(s)
+
 
 
 		3.6. yukarıda başlık bilgilerinin select sorgusunda gelmediğini görüyoruz. 
@@ -97,27 +86,14 @@ set hive.cli.print.header = true;
 
 		Şimdi select sorgusunu tekrar deneyelim.
 
-select * from simple_data;
+select * from simple_data limit 3;
 		OK
 		simple_data.sirano      simple_data.isim        simple_data.yas simple_data.meslek      simple_data.sehir       simple_data.aylik_gelir
 		1       Cemal   35      Isci    Ankara  3500.0
 		2       Ceyda   42      Memur   Kayseri 4200.0
 		3       Timur   30      Müzisyen        Istanbul        9000.0
-		4       Burcu   29      Pazarlamaci     Ankara  4200.0
-		5       Yasemin 23              Bursa   4800.0
-		6       Ali     33      Memur   Ankara  4250.0
-		7       Dilek   29      Pazarlamaci     Istanbul        7300.0
-		8       Murat   31      Müzisyen        Istanbul        12000.0
-		9       Ahmet   33      Doktor  Ankara  18000.0
-		10      Muhittin        46      Berber  Istanbul        12000.0
-		11      Hicaziye        47      Tuhafiyeci      Ankara  4800.0
-		12      Harun   43      Tornacı Ankara  4200.0
-		13      Hakkı   33      Memur   Çorum   3750.0
-		14      Gülizar 37      Doktor  İzmir   14250.0
-		15      Şehmuz  41              Ankara  8700.0
-		16      Gençay  46      Berber  Ankara  8800.0
-		16      Gençay  46      Berber  Ankara  8800.0
-		Time taken: 1.222 seconds, Fetched: 17 row(s)
+		Time taken: 0.142 seconds, Fetched: 3 row(s)
+
 
 	3.7. Şimdi simple_data tablosundan aktaracağımız tabloyu yaratalım. Şemaları aynı olmalıdır.
 	Bunun için mevcut tabloyu kullanabiliriz.
@@ -159,7 +135,9 @@ CREATE TABLE IF NOT EXISTS `simple_data2`(
   `sehir` string,
   `aylik_gelir` float)
 ROW FORMAT DELIMITED
-  FIELDS TERMINATED BY ',';	
+ FIELDS TERMINATED BY ',';	
+		OK
+		Time taken: 1.078 seconds
 
 
   	3.8. Şimdi simple_data tablosundaki veriyi yeni yarattığımız boş simple_data2 tablosuna yazınız.
@@ -184,26 +162,13 @@ insert into table simple_data2 select * from simple_data;
 
 	3.9. Şimdi kontrol edelim
 
-select * from simple_data2;
+select * from simple_data2 limit 3;
 		OK
+		simple_data2.sirano     simple_data2.isim       simple_data2.yas        simple_data2.meslek     simple_data2.sehirsimple_data2.aylik_gelir
 		1       Cemal   35      Isci    Ankara  3500.0
 		2       Ceyda   42      Memur   Kayseri 4200.0
 		3       Timur   30      Müzisyen        Istanbul        9000.0
-		4       Burcu   29      Pazarlamaci     Ankara  4200.0
-		5       Yasemin 23              Bursa   4800.0
-		6       Ali     33      Memur   Ankara  4250.0
-		7       Dilek   29      Pazarlamaci     Istanbul        7300.0
-		8       Murat   31      Müzisyen        Istanbul        12000.0
-		9       Ahmet   33      Doktor  Ankara  18000.0
-		10      Muhittin        46      Berber  Istanbul        12000.0
-		11      Hicaziye        47      Tuhafiyeci      Ankara  4800.0
-		12      Harun   43      Tornacı Ankara  4200.0
-		13      Hakkı   33      Memur   Çorum   3750.0
-		14      Gülizar 37      Doktor  İzmir   14250.0
-		15      Şehmuz  41              Ankara  8700.0
-		16      Gençay  46      Berber  Ankara  8800.0
-		16      Gençay  46      Berber  Ankara  8800.0
-		Time taken: 0.147 seconds, Fetched: 17 row(s)
+		Time taken: 0.136 seconds, Fetched: 3 row(s)
 
 	evet yüklendi.
 
@@ -316,7 +281,8 @@ desc simple_data;
 		sehir                   string
 		aylik_gelir             float
 		Time taken: 0.492 seconds, Fetched: 6 row(s)
-		5.1. Formatlı detaylı bilgi için:
+		
+	5.1. Formatlı detaylı bilgi için:
 desc formatted simple_data;
 		OK
 		# col_name              data_type               comment

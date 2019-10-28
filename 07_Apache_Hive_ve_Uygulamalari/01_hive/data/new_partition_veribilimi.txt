@@ -1,0 +1,4 @@
+10,VeriBilimi,Kaori,2353
+20,VeriBilimi,Alex,2038
+20,VeriBilimi,Harvey,2316
+20,VeriBilimi,Lorenzo,3451

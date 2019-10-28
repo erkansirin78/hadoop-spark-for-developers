@@ -19,6 +19,7 @@ create table if not exists social_media (KullaniciID int, Cinsiyet string, Yas i
 
 load data local inpath '/home/maria_dev/SosyalMedyaReklamKampanyasi.csv' overwrite into table social_media;
 
+set hive.cli.print.header=true;
 
 select * from social_media limit 5;
 	
@@ -29,10 +30,12 @@ select * from social_media limit 5;
 	15603246        Kadın   27      57000.0 0
 	15804002        Erkek   19      76000.0 0
 
-ORDER BY, SORT BY, DISTRIBUTED BY, CLUSTER BY
+	ORDER BY, SORT BY, DISTRIBUTED BY, CLUSTER BY
+	===================================================
 
 1. ORDER BY 
-	Tek bir reducer kullanır. Bildiğimiz tam sıralamadır. Ancak bunu yapmak için tek reducer kullanmak zorunda olduğu için zorlanır. Bu yüzden LIMIT ile sınırlandırılmalıdır(strict mode).
+	Tek bir reducer kullanır. Bildiğimiz tam sıralamadır. Ancak bunu yapmak için tek reducer kullanmak zorunda olduğu için zorlanır. 
+	Bu yüzden LIMIT ile sınırlandırılmalıdır(strict mode).
 
 	ORDER BY guarantees total ordering of data, but for that, it has to be passed on to a single reducer, which is normally performance-intensive and therefore in strict mode, hive makes it compulsory to use LIMIT with ORDER BY so that reducer doesn’t get overburdened.
 
@@ -560,12 +563,12 @@ SELECT yas, tahminimaas FROM social_media CLUSTER BY yas;
 
 5. Büyük veri HDFS gibi dosya sistemlerinde parçalara bölünerek saklanır.
 	Saklanan bu veri hive tablosu olsa bile aslında parçalara bölünmüş şekilde saklanan HDFS verisidir.
-	Peki biz bu parçaları rastgele geğil de işimize yarayacak şekilde saklasak. Örneğin İç Anadolu Bölgesi'ne ait tüm 
+	Peki biz bu parçaları rastgele değil de işimize yarayacak şekilde saklasak. Örneğin İç Anadolu Bölgesi'ne ait tüm 
 	kayıtlar aynı parçada olsa. İç Anadolu Bölgesi ile ilgili sorgulara daha hızlı yanıt vermez miyim? Çünkü biliyorum ki x parçasından başkasında İç Anadolu Bölgesi yok. öyleyse diğer parçaları işlemeden cevabımı tek bir parçaya dayanarak verebileceğim. Bu bana avantaj sağlayacaktır.
 
 	Bu aşamada 
 	https://raw.githubusercontent.com/erkansirin78/datasets/master/hive/personel_salaries.txt
-	adresindeki retail_db tabloları kullanılacaktır.
+	verisi kullanılacaktır.
 
 
 	[maria_dev@sandbox-hdp ~]$  ile
@@ -596,8 +599,11 @@ create table if not exists salaries_temp (DepartmentID int, Department string, N
 
 load data local inpath '/home/maria_dev/personel_salaries.txt' overwrite into table salaries_temp;
 
-	6.5. partitioned tablo oluşturma
- create table if not exists salaries_prt (DepartmentID int, Name string, Salary float) partitioned by (Department string) row format delimited fields terminated by ',' lines terminated by '\n' stored as textfile tblproperties('skip.header.line.count'='1');
+	6.5. partitioned tablo oluşturma:
+		Burada () içine partition yapılacak sütun konulmaz. Bu sütun partitioned by ile () dışında belirtilir.
+		Bunun dışında normal tablo yaratma ile aynıdır.
+		
+create table if not exists salaries_prt (DepartmentID int, Name string, Salary float) partitioned by (Department string) row format delimited fields terminated by ',' lines terminated by '\n' stored as textfile tblproperties('skip.header.line.count'='1');
 
  	6.6. Geçici tablodan partitioned tabloya veri yükleme: Dikkat partition olacak sütun(Department) en sonda seçilir
 
@@ -703,6 +709,70 @@ show partitions salaries_prt;
 wget https://raw.githubusercontent.com/erkansirin78/datasets/master/hive/veri_bilimi.txt
 
 
- beeline -u jdbc:hive2://localhost:10000
+hive
+use azhadoop;
 
- 
+load data local inpath'/home/maria_dev/veri_bilimi.txt' into table salaries_prt partition(Department='VeriBilimi');
+		Loading data to table azhadoop.salaries_prt partition (department=VeriBilimi)
+		Partition azhadoop.salaries_prt{department=VeriBilimi} stats: [numFiles=1, numRows=0, totalSize=102, rawDataSize=0]
+		OK
+		Time taken: 2.442 seconds
+
+11. hdfs'de partition tablo dizinine bir klasör yarattığımızda hive bunu nasıl tanır?
+
+quit;
+	ile hive shell'den çıkılır.
+	
+	11.1. Önce bir dizin yapısını görelim 
+hdfs dfs -ls /apps/hive/warehouse/azhadoop.db/salaries_prt
+		Found 4 items
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-22 20:01 /apps/hive/warehouse/azhadoop.db/salaries_prt/department=Muhasebe
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-22 20:01 /apps/hive/warehouse/azhadoop.db/salaries_prt/department=Pazarlama
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-22 20:01 /apps/hive/warehouse/azhadoop.db/salaries_prt/department=Satis
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-22 20:26 /apps/hive/warehouse/azhadoop.db/salaries_prt/department=VeriBilimi
+
+	11.2. Şimdi Lojistik adında yeni bir dizin oluşturalım.
+	
+hdfs dfs -mkdir /apps/hive/warehouse/azhadoop.db/salaries_prt/department=Lojistik
+
+hdfs dfs -ls /apps/hive/warehouse/azhadoop.db/salaries_prt
+		Found 5 items
+		drwxr-xr-x   - maria_dev hadoop          0 2019-10-22 20:35 /apps/hive/warehouse/azhadoop.db/salaries_prt/department=Lojistik
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-22 20:01 /apps/hive/warehouse/azhadoop.db/salaries_prt/department=Muhasebe
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-22 20:01 /apps/hive/warehouse/azhadoop.db/salaries_prt/department=Pazarlama
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-22 20:01 /apps/hive/warehouse/azhadoop.db/salaries_prt/department=Satis
+		drwxrwxrwx   - maria_dev hadoop          0 2019-10-22 20:26 /apps/hive/warehouse/azhadoop.db/salaries_prt/department=VeriBilimi
+	
+	görüldüğü gibi eklendi.
+	
+	Şimdi hive shell'e bağlanıp bu parçanın o tarafa gelip gelmediğini kontrol edelim.
+	
+hive
+use azhadoop;
+show partitions salaries_prt;
+		OK
+		department=Muhasebe
+		department=Pazarlama
+		department=Satis
+		department=VeriBilimi
+		Time taken: 0.71 seconds, Fetched: 4 row(s)
+
+
+	Gördüğümüz gibi gelmedi. Çünkü hdfs'te yaptığımızdan hive'ı haberi yok. Yani metadata gerçek veri ile uyumlu değil.
+	Bu durumu düzeltmenin iki yolu var: 1. Yukarıdaki gibi elle 2. komut ile 2. yolu deneyelim. 
+
+msck repair table salaries_prt;
+		OK
+		Partitions not in metastore:    salaries_prt:department=Lojistik
+		Repair: Added partition to metastore salaries_prt:department=Lojistik
+		Time taken: 0.749 seconds, Fetched: 2 row(s)
+
+	Kontrol:
+show partitions salaries_prt;
+		OK
+		department=Lojistik
+		department=Muhasebe
+		department=Pazarlama
+		department=Satis
+		department=VeriBilimi
+		Time taken: 0.605 seconds, Fetched: 5 row(s)

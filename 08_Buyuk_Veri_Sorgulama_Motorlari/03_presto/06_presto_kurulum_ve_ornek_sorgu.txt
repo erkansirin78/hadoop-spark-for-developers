@@ -1,0 +1,152 @@
+//////////// PRESTO KURULUM  //////////////////////
+
+1. root ile Sandbox'a bağlanılır.
+
+2. https://prestodb.github.io/ 
+adresine gidilir.
+
+3. Overview -> Deploying Presto 
+
+4. presto-server-0.2XX.tar.gz linkinin bağlantısını kopyala
+
+5. cd /opt
+
+6. Download presto
+wget https://repo1.maven.org/maven2/com/facebook/presto/presto-server/0.219/presto-server-0.219.tar.gz
+
+
+7. Extraxt .gz file
+tar xzf presto-server-0.219.tar.gz
+
+8. Create a symbolic link
+ln -s presto-server-0.219 presto 
+
+9. cd presto 
+
+CONFIGURING PRESTO 
+
+10. Download preconfigured files and extract
+wget https://veribilimiokulu.com/data/presto/presto_etc_dosyalar.tgz
+
+11. tar xzf presto_etc_dosyalar.tgz
+
+12. mkdir -p /var/presto/data
+
+13.Presto sitesinden Command Line Interface 
+Bölümünde presto-cli-0.2XX-executable.jar bağlantısını kopyala 
+
+cd /opt/presto/bin
+wget https://repo1.maven.org/maven2/com/facebook/presto/presto-cli/0.219/presto-cli-0.219-executable.jar
+
+14. chmod +x presto-cli-0.219-executable.jar
+
+15. Presto Server Çalıştırma 
+
+bin dizini içinde
+./launcher start
+
+Kontrol
+./launcher status
+
+16. 127.0.0.1:8090 adresinden arayüze eriş 
+
+
+17. ./presto-cli-0.2XX-executable.jar --server localhost:8090 --catalog hive --schema azhadoop
+
+presto:azhadoop> select * from hive.azhadoop.orders limit 10;
+	 orderid |       orderdate       | ordercustomerid |   orderstatus
+	---------+-----------------------+-----------------+-----------------
+		   1 | 2013-07-25 00:00:00.0 |           11599 | CLOSED
+		   2 | 2013-07-25 00:00:00.0 |             256 | PENDING_PAYMENT
+		   3 | 2013-07-25 00:00:00.0 |           12111 | COMPLETE
+		   4 | 2013-07-25 00:00:00.0 |            8827 | CLOSED
+		   5 | 2013-07-25 00:00:00.0 |           11318 | COMPLETE
+		   6 | 2013-07-25 00:00:00.0 |            7130 | COMPLETE
+		   7 | 2013-07-25 00:00:00.0 |            4530 | COMPLETE
+		   8 | 2013-07-25 00:00:00.0 |            2911 | PROCESSING
+		   9 | 2013-07-25 00:00:00.0 |            5657 | PENDING_PAYMENT
+		  10 | 2013-07-25 00:00:00.0 |            5648 | PENDING_PAYMENT
+	(10 rows)
+
+18. Presto shell'den çıkmak
+exit;
+
+
+19. Presto'yu durdurmak
+
+./launcher stop
+
+
+20. presto dbeaver
+
+Driver properties kısmında 
+sağ tıklayıp new properties 
+SSL false
+user maria_dev
+
+
+DBeaver üzerinde yeni sql editör oluşturulur ve aşağıdaki sorgular çalıştırılır.
+
+select * from hive.azhadoop.orders limit 10;
+
+select orderstatus, count(*) as sayi from hive.azhadoop.orders 
+group by orderstatus
+order by sayi desc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
