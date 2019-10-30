@@ -1,4 +1,4 @@
-
+﻿
 1. Bu ders Zeppelin veya Windows üzerine Spark 2.3.1 - Intellij kurularak işlenir.
 
 2.
@@ -82,6 +82,3 @@ pom.xml dosyasına eklenecekler:
     </build>
 	
 	
-jar oluşturma Intellij
-1. File -> Project Structure -> Libraries 
-	Add maven ve Maven: com.google.code.gson:gson:2.2.4 seç

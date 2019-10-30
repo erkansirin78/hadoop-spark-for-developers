@@ -40,3 +40,6 @@ eklenir.
 
 Bu ayarlar eklendikten sonra spark-submit te ayrıca kaynak belirlemeye gerek yoktur.
 
+Python örneği buradadır.
+
+Scala ve jar örneği Spark Firiş dersindedir.

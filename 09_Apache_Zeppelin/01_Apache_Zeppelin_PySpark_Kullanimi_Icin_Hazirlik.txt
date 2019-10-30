@@ -24,7 +24,22 @@ Yararlanılan kaynak :https://www.digitalocean.com/community/tutorials/how-to-in
 		root@sandbox-hdp /]# yum -y install python36u-pip
 		[root@sandbox-hdp /]# pip3.6 install --upgrade pip
 
+
+
+2. PYTHON VE PIP KONTROL ve GENEL PYTHON DATASCIENCE PAKETLERI YÜKLEME
+-----------------------------------------------------------------------------------
+
 		PİP3.6 KURULUMU (Artık Python 3 için paketlerimizi pip3.6 instal paket_adı ile yükleyeceğiz)
+		 
+		 
+		 
+		 [root@sandbox-hdp ~]# python3.6 -V
+			Python 3.6.5
+
+
+root@sandbox-hdp /]# yum -y install python36-pip
+
+		
 		[root@sandbox-hdp /]# pip3.6 -V
 		Çıktı: pip 9.0.1 from /usr/lib/python3.6/site-packages (python 3.6)
 		

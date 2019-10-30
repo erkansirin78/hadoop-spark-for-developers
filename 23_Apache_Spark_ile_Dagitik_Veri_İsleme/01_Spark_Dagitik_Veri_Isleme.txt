@@ -10,3 +10,9 @@ c.	Application, Job, Stage ve Task Kavramları
 	
 d.	Spark Execution Planı
 	SparkSQL dersinde dataframe api si ile sql explain planı karşılaştırdık. Teorik derslerde çalışma planından bahsettik.
+	
+	
+Spark dağıtık veri işleme ile ilgili uygulamalar:
+Jar çıkarıp hadoop cluster üzerinde yarn modunda çalıştırmak ve 
+Zeppelin notebook ile yarn modunda çalışmak bu dersin uygulamasıdır.
+
