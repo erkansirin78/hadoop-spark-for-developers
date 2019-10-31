@@ -95,7 +95,7 @@ ls -ltr /opt/gen_logs/logs
 
 	Komut her çalıştığında log dosyasının arttığını göreceksiniz.
 	
-4.5. Log üretimine tail ile bir bakalım
+4.5. Log üretimine tail komutu ile bir bakalım
 
 tail -F /opt/gen_logs/logs/access.log
 

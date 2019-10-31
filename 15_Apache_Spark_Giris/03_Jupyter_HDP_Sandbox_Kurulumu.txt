@@ -58,7 +58,7 @@ ile çalıştır.
 16. 
 http://sandbox-hdp.hortonworks.com:8889/?token=85adadd51bf1971c1f050fbde933b268a3d307aec9135c75
 
-adresinden jupyter'a eriş.
+adresinden jupyter'a eriş. (sizin linkiniz farklı olacaktır)
 
 Aşağıdaki kodları Jupyter'da çalıştır.
 
